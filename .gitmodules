@@ -1,0 +1,9 @@
+[submodule "services/auth"]
+	path = services/auth
+	url = git@github.com:cloudonlanapps/cl_server_auth_service.git
+[submodule "services/store"]
+	path = services/store
+	url = git@github.com:cloudonlanapps/cl_server_store_service.git
+[submodule "services/compute"]
+	path = services/compute
+	url = git@github.com:cloudonlanapps/cl_server_compute_worker.git
