@@ -7,3 +7,9 @@
 [submodule "services/compute"]
 	path = services/compute
 	url = git@github.com:cloudonlanapps/cl_server_compute_worker.git
+[submodule "services/shared"]
+	path = services/shared
+	url = git@github.com:cloudonlanapps/cl_server_shared.git
+[submodule "packages/cl_ml_tools"]
+	path = packages/cl_ml_tools
+	url = git@github.com:cloudonlanapps/cl_ml_tools.git
