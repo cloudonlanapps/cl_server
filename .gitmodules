@@ -18,11 +18,11 @@
 	path = services/shared
 	url = git@github.com:cloudonlanapps/cl_server_shared.git
 	branch = main
-[submodule "clients/python"]
-	path = clients/python
-	url = git@github.com:cloudonlanapps/cl_server_python_client.git
-	branch = main
 [submodule "clients/dart"]
 	path = clients/dart
 	url = git@github.com:cloudonlanapps/cl_server_dart_client.git
+	branch = main
+[submodule "apps/cli_python"]
+	path = apps/cli_python
+	url = https://github.com/cloudonlanapps/cl_server_cli_python.git
 	branch = main
