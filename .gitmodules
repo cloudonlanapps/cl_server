@@ -30,3 +30,6 @@
 	path = sdks/dartsdk
 	url = git@github.com:cloudonlanapps/cl_server_sdk_dart.git
 	branch = main
+[submodule "services/packages/cl_ml_tools"]
+	path = services/packages/cl_ml_tools
+	url = git@github.com:cloudonlanapps/cl_ml_tools.git
