@@ -1,0 +1,18 @@
+[project]
+name = "cl-server-services"
+version = "0.1.0"
+description = "Workspace for CL Server microservices"
+requires-python = ">=3.12"
+
+[tool.uv.workspace]
+members = [
+    "auth",
+    "compute",
+    "store",
+    "shared",
+    "packages/cl_ml_tools",
+]
+
+[tool.uv.sources]
+cl-server-shared = { workspace = true }
+cl-ml-tools = { workspace = true }
