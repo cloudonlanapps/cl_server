@@ -48,9 +48,6 @@ def main():
     args = parser.parse_args()
 
     cfg = load_config(args.config)
-    admin_password = os.environ.get("TEST_ADMIN_PASSWORD")
-    if not admin_password:
-        sys.exit("[ERROR] TEST_ADMIN_PASSWORD environment variable is required")
 
     # Ensure data directory exists (required for migrations and services)
     try:
