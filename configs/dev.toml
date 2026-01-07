@@ -1,0 +1,34 @@
+[paths]
+auth_dir = "/Users/anandasarangaram/Work/cl_server/services/auth"
+store_dir = "/Users/anandasarangaram/Work/cl_server/services/store"
+compute_dir = "/Users/anandasarangaram/Work/cl_server/services/compute"
+worker_dir = "/Users/anandasarangaram/Work/cl_server/services/compute"
+
+[data]
+dir = "/tmp/cl_server_data"
+log_dir = "/tmp/cl_server_logs"
+
+[ports]
+auth = 8010
+store = 8011
+compute = 8012
+
+[compute]
+auth_required = false
+
+[store]
+guest_mode = "off"  # on | off
+
+[worker]
+id = "dev-worker"
+tasks = [
+  "clip_embedding",
+  "dino_embedding",
+  "exif",
+  "face_detection",
+  "face_embedding",
+  "hash",
+  "hls_streaming",
+  "image_conversion",
+  "media_thumbnail",
+]
