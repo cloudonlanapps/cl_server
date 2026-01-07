@@ -4,6 +4,7 @@ import signal
 import time
 from pathlib import Path
 from typing import Optional
+from loguru import logger
 
 import requests
 from pydantic import BaseModel
@@ -91,7 +92,7 @@ def stop_process(
     if not proc or proc.poll() is not None:
         # Process not running
         if health_url:
-            print(f"[INFO] {name} is not running")
+            logger.info(f"{name} is not running")
         return True
 
     try:
@@ -106,14 +107,14 @@ def stop_process(
         if proc.poll() is not None:
             # Process terminated
             if health_url and is_server_healthy(health_url):
-                print(f"[WARNING] {name}: Attempt to stop gracefully failed")
+                logger.warning(f"{name}: Attempt to stop gracefully failed")
             else:
-                print(f"[INFO] {name} stopped successfully")
+                logger.info(f"{name} stopped successfully")
             return True
         time.sleep(0.1)
 
     # Force kill if still running
-    print(f"[WARNING] {name}: Force kill")
+    logger.warning(f"{name}: Force kill")
     try:
         os.killpg(proc.pid, signal.SIGKILL)
     except OSError:
@@ -127,9 +128,9 @@ def stop_process(
     # Verify it's gone
     if health_url:
         if is_server_healthy(health_url):
-            print(f"[ERROR] {name} force kill failed, Stop {name} manually")
+            logger.error(f"{name} force kill failed, Stop {name} manually")
         else:
-            print(f"[INFO] {name} force killed successfully")
+            logger.info(f"{name} force killed successfully")
 
     return False
 
@@ -147,29 +148,29 @@ def stop_all_processes(processes: Processes, config=None):
         processes: Processes object containing all running services
         config: Optional config object with URLs for health checks
     """
-    print("[INFO] Shutting down services")
+    logger.info("Shutting down services")
 
     # Stop workers first (no health check for workers)
     for i, proc in enumerate(processes.workers):
-        print(f"[INFO] Stopping worker {i + 1}/{len(processes.workers)}...")
+        logger.info(f"Stopping worker {i + 1}/{len(processes.workers)}...")
         stop_process(proc, f"worker-{i}")
 
     # Stop store
     if processes.store:
-        print("[INFO] Stopping store...")
+        logger.info("Stopping store...")
         health_url = config.store_url if config else None
         stop_process(processes.store, "store", health_url=health_url)
 
     # Stop compute
     if processes.compute:
-        print("[INFO] Stopping compute...")
+        logger.info("Stopping compute...")
         health_url = config.compute_url if config else None
         stop_process(processes.compute, "compute", health_url=health_url)
 
     # Stop auth
     if processes.auth:
-        print("[INFO] Stopping auth...")
+        logger.info("Stopping auth...")
         health_url = config.auth_url if config else None
         stop_process(processes.auth, "auth", health_url=health_url)
 
-    print("[INFO] All services stopped.")
+    logger.success("All services stopped.")

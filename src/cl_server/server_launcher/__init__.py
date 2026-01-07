@@ -5,6 +5,7 @@ import sys
 import threading
 import time
 import requests
+from loguru import logger
 
 from .config import load_config
 from .services import build_services
@@ -30,7 +31,7 @@ shutdown_event = threading.Event()
 
 def _handle_signal(signum, frame):
     """Handle shutdown signals safely without reentrant I/O."""
-    # Use os.write for async-signal-safe I/O instead of print()
+    # Use os.write for async-signal-safe I/O instead of print or logging
     import errno
 
     msg = f"\nReceived signal {signum}, shutting down…\n"
@@ -64,7 +65,7 @@ def main():
 
     try:
         # Run database migrations before starting services
-        print("[INFO] Running database migrations...")
+        logger.info("Running database migrations...")
         if not migrate_auth(cfg.auth_dir, env):
             sys.exit("[ERROR] Auth service migration failed")
         if not migrate_store(cfg.store_dir, env):
@@ -73,12 +74,12 @@ def main():
             sys.exit("[ERROR] Compute service migration failed")
 
         # Start auth (required by all other services)
-        print("[INFO] Starting auth server...")
+        logger.info("Starting auth server...")
         processes.auth = start_process(services.auth)
         wait_for_server(cfg.auth_url)
 
         # Start compute (required by store and workers)
-        print("[INFO] Starting compute server...")
+        logger.info("Starting compute server...")
         processes.compute = start_process(services.compute)
         wait_for_server(cfg.compute_url)
 
@@ -86,7 +87,7 @@ def main():
         time.sleep(1)
 
         # Start store (requires auth and compute)
-        print("[INFO] Starting store server...")
+        logger.info("Starting store server...")
         processes.store = start_process(services.store)
         wait_for_server(cfg.store_url)
 
@@ -95,7 +96,7 @@ def main():
 
         # Start workers (require auth and compute)
         for i, worker_service in enumerate(services.workers):
-            print(f"[INFO] Starting worker {i + 1}/{len(services.workers)}")
+            logger.info(f"Starting worker {i + 1}/{len(services.workers)}")
             processes.workers.append(start_process(worker_service))
 
         # Signals
@@ -103,7 +104,7 @@ def main():
         signal.signal(signal.SIGQUIT, _handle_signal)  # Ctrl+\
         signal.signal(signal.SIGTERM, _handle_signal)
 
-        print("All services started. Press Ctrl+C / Ctrl+\\ to stop.")
+        logger.success("All services started. Press Ctrl+C / Ctrl+\\ to stop.")
         shutdown_event.wait()
 
     finally:

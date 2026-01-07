@@ -2,6 +2,7 @@
 
 import subprocess
 from pathlib import Path
+from loguru import logger
 
 
 def run_migration(service_dir: Path, service_name: str, env: dict[str, str]) -> bool:
@@ -16,15 +17,15 @@ def run_migration(service_dir: Path, service_name: str, env: dict[str, str]) -> 
         True if migration succeeded, False otherwise
     """
     if not service_dir.exists():
-        print(f"[WARNING] Service directory does not exist: {service_dir}")
+        logger.warning(f" Service directory does not exist: {service_dir}")
         return False
 
     alembic_ini = service_dir / "alembic.ini"
     if not alembic_ini.exists():
-        print(f"[WARNING] No alembic.ini found in {service_dir}")
+        logger.warning(f" No alembic.ini found in {service_dir}")
         return False
 
-    print(f"[INFO] Running migrations for {service_name} at {service_dir}...")
+    logger.info(f" Running migrations for {service_name} at {service_dir}...")
 
     try:
         result = subprocess.run(
@@ -37,19 +38,19 @@ def run_migration(service_dir: Path, service_name: str, env: dict[str, str]) -> 
         )
 
         if result.returncode != 0:
-            print(f"[ERROR] Migration failed for {service_name}")
-            print(f"STDOUT: {result.stdout}")
-            print(f"STDERR: {result.stderr}")
+            logger.error(f"Migration failed for {service_name}")
+            logger.debug(f"STDOUT: {result.stdout}")
+            logger.debug(f"STDERR: {result.stderr}")
             return False
 
-        print(f"[INFO] Migration completed for {service_name}")
+        logger.info(f" Migration completed for {service_name}")
         return True
 
     except subprocess.TimeoutExpired:
-        print(f"[ERROR] Migration timed out for {service_name}")
+        logger.error(f"Migration timed out for {service_name}")
         return False
     except Exception as e:
-        print(f"[ERROR] Unexpected error during migration for {service_name}: {e}")
+        logger.error(f"Unexpected error during migration for {service_name}: {e}")
         return False
 
 
