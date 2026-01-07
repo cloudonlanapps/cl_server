@@ -2,7 +2,7 @@ from pathlib import Path
 from pydantic import BaseModel
 
 
-class ServiceConfig(BaseModel):
+class ServiceArgs(BaseModel):
     cmd: list[str]
     cwd: Path
     env: dict[str, str]
@@ -10,17 +10,17 @@ class ServiceConfig(BaseModel):
 
 
 class Services(BaseModel):
-    auth: ServiceConfig
-    store: ServiceConfig
-    compute: ServiceConfig
-    workers: list[ServiceConfig]
+    auth: ServiceArgs
+    store: ServiceArgs
+    compute: ServiceArgs
+    workers: list[ServiceArgs]
 
 
 def build_services(cfg, env) -> Services:
     workers = []
     for i, worker_cfg in enumerate(cfg.workers):
         workers.append(
-            ServiceConfig(
+            ServiceArgs(
                 cmd=[
                     "uv",
                     "run",
@@ -28,7 +28,7 @@ def build_services(cfg, env) -> Services:
                     "--worker-id",
                     worker_cfg.id,
                     "--port",
-                    str(cfg.compute_port),
+                    str(cfg.compute.port),
                     "--tasks",
                     ",".join(worker_cfg.tasks),
                 ],
@@ -39,28 +39,27 @@ def build_services(cfg, env) -> Services:
         )
 
     return Services(
-        auth=ServiceConfig(
-            cmd=["uv", "run", "auth-server", "--port", str(cfg.auth_port)],
-            cwd=cfg.auth_dir,
+        auth=ServiceArgs(
+            cmd=["uv", "run", "auth-server", "--port", str(cfg.auth.port)],
+            cwd=cfg.auth.dir,
             env=env,
             log_file=cfg.log_dir / "auth.log",
         ),
-        store=ServiceConfig(
-            cmd=["uv", "run", "store", "--port", str(cfg.store_port)],
-            cwd=cfg.store_dir,
+        store=ServiceArgs(
+            cmd=["uv", "run", "store", "--port", str(cfg.store.port)],
+            cwd=cfg.store.dir,
             env=env,
             log_file=cfg.log_dir / "store.log",
         ),
-        compute=ServiceConfig(
+        compute=ServiceArgs(
             cmd=[
                 "uv",
                 "run",
                 "compute-server",
                 "--port",
-                str(cfg.compute_port),
-                *([] if cfg.compute_guest_mode == "off" else ["--guest-mode"]),
+                str(cfg.compute.port),
             ],
-            cwd=cfg.compute_dir,
+            cwd=cfg.compute.dir,
             env=env,
             log_file=cfg.log_dir / "compute.log",
         ),

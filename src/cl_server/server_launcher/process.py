@@ -8,7 +8,7 @@ from loguru import logger
 
 import requests
 from pydantic import BaseModel
-from .services import ServiceConfig
+from .services import ServiceArgs
 
 
 class Processes(BaseModel):
@@ -20,7 +20,7 @@ class Processes(BaseModel):
     workers: list[subprocess.Popen] = []
 
 
-def start_process(service: ServiceConfig) -> subprocess.Popen:
+def start_process(service: ServiceArgs) -> subprocess.Popen:
     """Start a service subprocess.
 
     Args:

@@ -3,50 +3,18 @@ from pathlib import Path
 from pydantic import BaseModel, field_validator
 
 
-class AuthConfig(BaseModel):
+class ServiceConfig(BaseModel):
     """Auth service configuration."""
 
     dir: Path
     port: int
 
 
-class StoreConfig(BaseModel):
-    """Store service configuration."""
-
-    dir: Path
-    port: int
-    guest_mode: str
-
-    @field_validator("guest_mode")
-    @classmethod
-    def validate_guest_mode(cls, v: str) -> str:
-        """Validate guest_mode is 'on' or 'off'."""
-        if v not in ("on", "off"):
-            raise ValueError("guest_mode must be 'on' or 'off'")
-        return v
-
-
-class ComputeConfig(BaseModel):
-    """Compute service configuration."""
-
-    dir: Path
-    port: int
-    guest_mode: str
-
-    @field_validator("guest_mode")
-    @classmethod
-    def validate_guest_mode(cls, v: str) -> str:
-        """Validate guest_mode is 'on' or 'off'."""
-        if v not in ("on", "off"):
-            raise ValueError("guest_mode must be 'on' or 'off'")
-        return v
-
-
 class WorkerConfig(BaseModel):
     """Worker service configuration."""
 
-    id: str
     dir: Path
+    id: str
     tasks: list[str]
 
 
@@ -56,57 +24,24 @@ class Config(BaseModel):
     data_dir: Path
     log_dir: Path
 
-    auth: AuthConfig
-    store: StoreConfig
-    compute: ComputeConfig
+    auth: ServiceConfig
+    store: ServiceConfig
+    compute: ServiceConfig
     workers: list[WorkerConfig]
 
-    model_config = {"arbitrary_types_allowed": True}
-
-    # Convenience properties for backwards compatibility
-    @property
-    def auth_dir(self) -> Path:
-        return self.auth.dir
-
-    @property
-    def auth_port(self) -> int:
-        return self.auth.port
-
-    @property
-    def store_dir(self) -> Path:
-        return self.store.dir
-
-    @property
-    def store_port(self) -> int:
-        return self.store.port
-
-    @property
-    def store_guest_mode(self) -> str:
-        return self.store.guest_mode
-
-    @property
-    def compute_dir(self) -> Path:
-        return self.compute.dir
-
-    @property
-    def compute_port(self) -> int:
-        return self.compute.port
-
-    @property
-    def compute_guest_mode(self) -> str:
-        return self.compute.guest_mode
+    # model_config = {"arbitrary_types_allowed": True}
 
     @property
     def auth_url(self) -> str:
-        return f"http://localhost:{self.auth_port}"
+        return f"http://localhost:{self.auth.port}"
 
     @property
     def store_url(self) -> str:
-        return f"http://localhost:{self.store_port}"
+        return f"http://localhost:{self.store.port}"
 
     @property
     def compute_url(self) -> str:
-        return f"http://localhost:{self.compute_port}"
+        return f"http://localhost:{self.compute.port}"
 
 
 def load_config(path: Path | str) -> Config:

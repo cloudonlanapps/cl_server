@@ -43,7 +43,7 @@ def run_migration(service_dir: Path, service_name: str, env: dict[str, str]) -> 
             logger.debug(f"STDERR: {result.stderr}")
             return False
 
-        logger.info(f" Migration completed for {service_name}")
+        logger.success(f" Migration completed for {service_name}")
         return True
 
     except subprocess.TimeoutExpired:

@@ -7,17 +7,15 @@
   },
   "store": {
     "dir": "/Users/anandasarangaram/Work/cl_server/services/store",
-    "port": 8011,
-    "guest_mode": "on"
+    "port": 8011
   },
   "compute": {
     "dir": "/Users/anandasarangaram/Work/cl_server/services/compute",
-    "port": 8012,
-    "guest_mode": "off"
+    "port": 8012
   },
   "workers": [
     {
-      "id": "dev-worker-1",
+      "id": "dev-worker-8012-1",
       "dir": "/Users/anandasarangaram/Work/cl_server/services/compute",
       "tasks": [
         "clip_embedding",
@@ -32,7 +30,7 @@
       ]
     },
     {
-      "id": "dev-worker-2",
+      "id": "dev-worker-8012-2",
       "dir": "/Users/anandasarangaram/Work/cl_server/services/compute",
       "tasks": [
         "clip_embedding",

@@ -66,38 +66,44 @@ def main():
     try:
         # Run database migrations before starting services
         logger.info("Running database migrations...")
-        if not migrate_auth(cfg.auth_dir, env):
+        if not migrate_auth(cfg.auth.dir, env):
             sys.exit("[ERROR] Auth service migration failed")
-        if not migrate_store(cfg.store_dir, env):
+        if not migrate_store(cfg.store.dir, env):
             sys.exit("[ERROR] Store service migration failed")
-        if not migrate_compute(cfg.compute_dir, env):
+        if not migrate_compute(cfg.compute.dir, env):
             sys.exit("[ERROR] Compute service migration failed")
 
         # Start auth (required by all other services)
-        logger.info("Starting auth server...")
+        logger.info(f"Starting auth server @ port {cfg.auth.port}...")
         processes.auth = start_process(services.auth)
         wait_for_server(cfg.auth_url)
+        logger.success("auth service started")
 
         # Start compute (required by store and workers)
-        logger.info("Starting compute server...")
+        logger.info(f"Starting compute server @ port {cfg.compute.port}...")
         processes.compute = start_process(services.compute)
-        wait_for_server(cfg.compute_url)
 
         # Wait for compute to load auth module and cache public key
         time.sleep(1)
+        wait_for_server(cfg.compute_url)
+        logger.success("compute service started")
 
         # Start store (requires auth and compute)
-        logger.info("Starting store server...")
+        logger.info(f"Starting store server @ port {cfg.store.port}...")
         processes.store = start_process(services.store)
-        wait_for_server(cfg.store_url)
 
         # Wait for store to load auth module and cache public key
         time.sleep(1)
+        wait_for_server(cfg.store_url)
+        logger.success("store service started")
 
         # Start workers (require auth and compute)
         for i, worker_service in enumerate(services.workers):
-            logger.info(f"Starting worker {i + 1}/{len(services.workers)}")
+            logger.info(
+                f"Starting worker {i + 1}/{len(services.workers)} : listening to {cfg.compute.port}"
+            )
             processes.workers.append(start_process(worker_service))
+            logger.success(f"worker {i + 1}/{len(services.workers)} started")
 
         # Signals
         signal.signal(signal.SIGINT, _handle_signal)  # Ctrl+C
