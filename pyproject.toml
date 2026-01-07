@@ -6,6 +6,8 @@ requires-python = ">=3.12"
 
 dependencies = [
     "basedpyright>=1.37.0",
+    "loguru>=0.7.3",
+    "pydantic>=2.12.5",
     "requests>=2.31.0",
 ]
 
@@ -27,7 +29,7 @@ compute-worker = "compute.compute_worker:main"
 store = "store.main:main"
 cl-client = "cl_client_cli.main:cli"
 cl-client-sdk = "cl_client.cli:main"
-server-launcher = "cl_server.server_launcher.cli:main"
+server-launcher = "cl_server.server_launcher:main"
 
 [tool.uv.workspace]
 members = [

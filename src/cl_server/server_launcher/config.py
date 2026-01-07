@@ -1,27 +1,100 @@
-from dataclasses import dataclass
 from pathlib import Path
-import tomllib
+
+from pydantic import BaseModel, field_validator
 
 
-@dataclass(frozen=True)
-class Config:
-    auth_dir: Path
-    store_dir: Path
-    compute_dir: Path
-    worker_dir: Path
+class AuthConfig(BaseModel):
+    """Auth service configuration."""
 
-    auth_port: int
-    store_port: int
-    compute_port: int
+    dir: Path
+    port: int
+
+
+class StoreConfig(BaseModel):
+    """Store service configuration."""
+
+    dir: Path
+    port: int
+    guest_mode: str
+
+    @field_validator("guest_mode")
+    @classmethod
+    def validate_guest_mode(cls, v: str) -> str:
+        """Validate guest_mode is 'on' or 'off'."""
+        if v not in ("on", "off"):
+            raise ValueError("guest_mode must be 'on' or 'off'")
+        return v
+
+
+class ComputeConfig(BaseModel):
+    """Compute service configuration."""
+
+    dir: Path
+    port: int
+    guest_mode: str
+
+    @field_validator("guest_mode")
+    @classmethod
+    def validate_guest_mode(cls, v: str) -> str:
+        """Validate guest_mode is 'on' or 'off'."""
+        if v not in ("on", "off"):
+            raise ValueError("guest_mode must be 'on' or 'off'")
+        return v
+
+
+class WorkerConfig(BaseModel):
+    """Worker service configuration."""
+
+    id: str
+    dir: Path
+    tasks: list[str]
+
+
+class Config(BaseModel):
+    """Server launcher configuration loaded from JSON."""
 
     data_dir: Path
     log_dir: Path
 
-    compute_auth_required: bool
-    store_guest_mode: str
+    auth: AuthConfig
+    store: StoreConfig
+    compute: ComputeConfig
+    workers: list[WorkerConfig]
 
-    worker_id: str
-    tasks: list[str]
+    model_config = {"arbitrary_types_allowed": True}
+
+    # Convenience properties for backwards compatibility
+    @property
+    def auth_dir(self) -> Path:
+        return self.auth.dir
+
+    @property
+    def auth_port(self) -> int:
+        return self.auth.port
+
+    @property
+    def store_dir(self) -> Path:
+        return self.store.dir
+
+    @property
+    def store_port(self) -> int:
+        return self.store.port
+
+    @property
+    def store_guest_mode(self) -> str:
+        return self.store.guest_mode
+
+    @property
+    def compute_dir(self) -> Path:
+        return self.compute.dir
+
+    @property
+    def compute_port(self) -> int:
+        return self.compute.port
+
+    @property
+    def compute_guest_mode(self) -> str:
+        return self.compute.guest_mode
 
     @property
     def auth_url(self) -> str:
@@ -37,25 +110,22 @@ class Config:
 
 
 def load_config(path: Path | str) -> Config:
+    """Load configuration from a JSON file.
+
+    Args:
+        path: Path to the JSON config file
+
+    Returns:
+        Config: Parsed configuration object
+
+    Raises:
+        FileNotFoundError: If the config file doesn't exist
+        json.JSONDecodeError: If the JSON is invalid
+        ValueError: If the configuration is invalid
+    """
     path = Path(path) if isinstance(path, str) else path
-    raw = tomllib.loads(path.read_text())
 
-    guest_mode = raw["store"]["guest_mode"]
-    if guest_mode not in ("on", "off"):
-        raise ValueError("store.guest_mode must be 'on' or 'off'")
+    if not path.exists():
+        raise FileNotFoundError(f"Config file not found: {path}")
 
-    return Config(
-        auth_dir=Path(raw["paths"]["auth_dir"]),
-        store_dir=Path(raw["paths"]["store_dir"]),
-        compute_dir=Path(raw["paths"]["compute_dir"]),
-        worker_dir=Path(raw["paths"]["worker_dir"]),
-        auth_port=raw["ports"]["auth"],
-        store_port=raw["ports"]["store"],
-        compute_port=raw["ports"]["compute"],
-        data_dir=Path(raw["data"]["dir"]),
-        log_dir=Path(raw["data"]["log_dir"]),
-        compute_auth_required=raw["compute"]["auth_required"],
-        store_guest_mode=guest_mode,
-        worker_id=raw["worker"]["id"],
-        tasks=raw["worker"]["tasks"],
-    )
+    return Config.model_validate_json(path.read_text())
