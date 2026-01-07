@@ -9,8 +9,10 @@ resolution-markers = [
 [manifest]
 members = [
     "auth",
+    "cl-client",
+    "cl-client-cli",
     "cl-ml-tools",
-    "cl-server-services",
+    "cl-server",
     "cl-server-shared",
     "compute",
     "store",
@@ -73,7 +75,7 @@ wheels = [
 [[package]]
 name = "auth"
 version = "0.1.0"
-source = { editable = "auth" }
+source = { editable = "services/auth" }
 dependencies = [
     { name = "alembic" },
     { name = "basedpyright" },
@@ -104,7 +106,7 @@ requires-dist = [
     { name = "auth", extras = ["dev"], marker = "extra == 'all'" },
     { name = "basedpyright", specifier = ">=1.36.1" },
     { name = "bcrypt", specifier = ">=5.0.0" },
-    { name = "cl-server-shared", editable = "shared" },
+    { name = "cl-server-shared", editable = "services/shared" },
     { name = "fastapi", specifier = ">=0.127.0" },
     { name = "httpx", marker = "extra == 'dev'", specifier = ">=0.28.1" },
     { name = "pydantic", specifier = ">=2.12.5" },
@@ -262,9 +264,111 @@ wheels = [
 ]
 
 [[package]]
+name = "cl-client"
+version = "0.1.0"
+source = { editable = "sdks/pysdk" }
+dependencies = [
+    { name = "basedpyright" },
+    { name = "click" },
+    { name = "httpx" },
+    { name = "paho-mqtt" },
+    { name = "pydantic" },
+    { name = "rich" },
+]
+
+[package.optional-dependencies]
+all = [
+    { name = "httpx" },
+    { name = "pillow" },
+    { name = "pytest" },
+    { name = "pytest-asyncio" },
+    { name = "pytest-cov" },
+]
+dev = [
+    { name = "httpx" },
+    { name = "pillow" },
+    { name = "pytest" },
+    { name = "pytest-asyncio" },
+    { name = "pytest-cov" },
+]
+
+[package.dev-dependencies]
+dev = [
+    { name = "pytest" },
+    { name = "pytest-asyncio" },
+    { name = "pytest-cov" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "basedpyright", specifier = ">=1.36.2" },
+    { name = "cl-client", extras = ["dev"], marker = "extra == 'all'" },
+    { name = "click", specifier = ">=8.1.0" },
+    { name = "httpx", specifier = ">=0.28.1" },
+    { name = "httpx", marker = "extra == 'dev'", specifier = ">=0.28.1" },
+    { name = "paho-mqtt", specifier = ">=2.1.0" },
+    { name = "pillow", marker = "extra == 'dev'", specifier = ">=11.0.0" },
+    { name = "pydantic", specifier = ">=2.12.5" },
+    { name = "pytest", marker = "extra == 'dev'", specifier = ">=9.0.2" },
+    { name = "pytest-asyncio", marker = "extra == 'dev'", specifier = ">=1.3.0" },
+    { name = "pytest-cov", marker = "extra == 'dev'", specifier = ">=7.0.0" },
+    { name = "rich", specifier = ">=13.0.0" },
+]
+provides-extras = ["dev", "all"]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "pytest", specifier = ">=9.0.2" },
+    { name = "pytest-asyncio", specifier = ">=1.3.0" },
+    { name = "pytest-cov", specifier = ">=7.0.0" },
+]
+
+[[package]]
+name = "cl-client-cli"
+version = "0.1.0"
+source = { editable = "apps/cli_python" }
+dependencies = [
+    { name = "cl-client" },
+    { name = "click" },
+    { name = "rich" },
+]
+
+[package.optional-dependencies]
+all = [
+    { name = "pytest" },
+    { name = "pytest-asyncio" },
+    { name = "pytest-cov" },
+]
+dev = [
+    { name = "pytest" },
+    { name = "pytest-asyncio" },
+    { name = "pytest-cov" },
+]
+
+[package.dev-dependencies]
+dev = [
+    { name = "numpy" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "cl-client", editable = "sdks/pysdk" },
+    { name = "cl-client-cli", extras = ["dev"], marker = "extra == 'all'" },
+    { name = "click", specifier = ">=8.1.0" },
+    { name = "pytest", marker = "extra == 'dev'", specifier = ">=9.0.2" },
+    { name = "pytest-asyncio", marker = "extra == 'dev'", specifier = ">=1.3.0" },
+    { name = "pytest-cov", marker = "extra == 'dev'", specifier = ">=7.0.0" },
+    { name = "rich", specifier = ">=13.0.0" },
+]
+provides-extras = ["dev", "all"]
+
+[package.metadata.requires-dev]
+dev = [{ name = "numpy", specifier = ">=2.0.0" }]
+
+[[package]]
 name = "cl-ml-tools"
 version = "0.2.1"
-source = { editable = "packages/cl_ml_tools" }
+source = { editable = "services/packages/cl_ml_tools" }
 dependencies = [
     { name = "aiofiles" },
     { name = "basedpyright" },
@@ -303,7 +407,7 @@ dev = [
 requires-dist = [
     { name = "aiofiles", specifier = ">=25.1.0" },
     { name = "basedpyright", specifier = ">=1.36.1" },
-    { name = "cl-ml-tools", extras = ["dev"], marker = "extra == 'all'", editable = "packages/cl_ml_tools" },
+    { name = "cl-ml-tools", extras = ["dev"], marker = "extra == 'all'", editable = "services/packages/cl_ml_tools" },
     { name = "fastapi", specifier = ">=0.100" },
     { name = "httpx", specifier = ">=0.24" },
     { name = "httpx", marker = "extra == 'dev'", specifier = ">=0.24" },
@@ -327,14 +431,14 @@ requires-dist = [
 provides-extras = ["dev", "all"]
 
 [[package]]
-name = "cl-server-services"
+name = "cl-server"
 version = "0.1.0"
-source = { virtual = "." }
+source = { editable = "." }
 
 [[package]]
 name = "cl-server-shared"
 version = "0.1.0"
-source = { editable = "shared" }
+source = { editable = "services/shared" }
 dependencies = [
     { name = "aiofiles" },
     { name = "cl-ml-tools" },
@@ -355,7 +459,7 @@ dev = [
 requires-dist = [
     { name = "aiofiles", specifier = ">=25.0.0" },
     { name = "basedpyright", marker = "extra == 'dev'", specifier = ">=1.36.0" },
-    { name = "cl-ml-tools", editable = "packages/cl_ml_tools" },
+    { name = "cl-ml-tools", editable = "services/packages/cl_ml_tools" },
     { name = "pydantic", specifier = ">=2.0.0" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=7.0.0" },
     { name = "pytest-asyncio", marker = "extra == 'dev'", specifier = ">=0.21.0" },
@@ -401,7 +505,7 @@ wheels = [
 [[package]]
 name = "compute"
 version = "0.1.0"
-source = { editable = "compute" }
+source = { editable = "services/compute" }
 dependencies = [
     { name = "alembic" },
     { name = "basedpyright" },
@@ -433,8 +537,8 @@ dev = [
 requires-dist = [
     { name = "alembic", specifier = ">=1.17.2" },
     { name = "basedpyright", specifier = ">=1.36.2" },
-    { name = "cl-ml-tools", editable = "packages/cl_ml_tools" },
-    { name = "cl-server-shared", editable = "shared" },
+    { name = "cl-ml-tools", editable = "services/packages/cl_ml_tools" },
+    { name = "cl-server-shared", editable = "services/shared" },
     { name = "compute", extras = ["dev"], marker = "extra == 'all'" },
     { name = "fastapi", specifier = ">=0.127.0" },
     { name = "httpx", marker = "extra == 'dev'", specifier = ">=0.28.1" },
@@ -742,6 +846,18 @@ wheels = [
 ]
 
 [[package]]
+name = "markdown-it-py"
+version = "4.0.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "mdurl" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/5b/f5/4ec618ed16cc4f8fb3b701563655a69816155e79e24a17b651541804721d/markdown_it_py-4.0.0.tar.gz", hash = "sha256:cb0a2b4aa34f932c007117b194e945bd74e0ec24133ceb5bac59009cda1cb9f3", size = 73070, upload-time = "2025-08-11T12:57:52.854Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/94/54/e7d793b573f298e1c9013b8c4dade17d481164aa517d1d7148619c2cedbf/markdown_it_py-4.0.0-py3-none-any.whl", hash = "sha256:87327c59b172c5011896038353a81343b6754500a08cd7a4973bb48c6d578147", size = 87321, upload-time = "2025-08-11T12:57:51.923Z" },
+]
+
+[[package]]
 name = "markupsafe"
 version = "3.0.3"
 source = { registry = "https://pypi.org/simple" }
@@ -811,6 +927,15 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/bc/34/55d47aab1ef03fb5aab96257a31acfc58791d274cf86c044e6e75e6d3bfe/marshmallow-4.2.0.tar.gz", hash = "sha256:908acabd5aa14741419d3678d3296bda6abe28a167b7dcd05969ceb8256943ac", size = 221225, upload-time = "2026-01-04T16:07:36.921Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/1c/b6/0a907f92c2158c9841da0227c7074ce1490f578f34d67cbba82ba8f9146e/marshmallow-4.2.0-py3-none-any.whl", hash = "sha256:1dc369bd13a8708a9566d6f73d1db07d50142a7580f04fd81e1c29a4d2e10af4", size = 48448, upload-time = "2026-01-04T16:07:34.269Z" },
+]
+
+[[package]]
+name = "mdurl"
+version = "0.1.2"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/d6/54/cfe61301667036ec958cb99bd3efefba235e65cdeb9c84d24a8293ba1d90/mdurl-0.1.2.tar.gz", hash = "sha256:bb413d29f5eea38f31dd4754dd7377d4465116fb207585f97bf925588687c1ba", size = 8729, upload-time = "2022-08-14T12:40:10.846Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/b3/38/89ba8ad64ae25be8de66a6d463314cf1eb366222074cfda9ee839c56a4b4/mdurl-0.1.2-py3-none-any.whl", hash = "sha256:84008a41e51615a49fc9966191ff91509e3c40b939176e643fd50a5c2196b8f8", size = 9979, upload-time = "2022-08-14T12:40:09.779Z" },
 ]
 
 [[package]]
@@ -1327,6 +1452,19 @@ wheels = [
 ]
 
 [[package]]
+name = "rich"
+version = "14.2.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "markdown-it-py" },
+    { name = "pygments" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/fb/d2/8920e102050a0de7bfabeb4c4614a49248cf8d5d7a8d01885fbb24dc767a/rich-14.2.0.tar.gz", hash = "sha256:73ff50c7c0c1c77c8243079283f4edb376f0f6442433aecb8ce7e6d0b92d1fe4", size = 219990, upload-time = "2025-10-09T14:16:53.064Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/25/7a/b0178788f8dc6cafce37a212c99565fa1fe7872c70c6c9c1e1a372d9d88f/rich-14.2.0-py3-none-any.whl", hash = "sha256:76bc51fe2e57d2b1be1f96c524b890b816e334ab4c1e45888799bfaab0021edd", size = 243393, upload-time = "2025-10-09T14:16:51.245Z" },
+]
+
+[[package]]
 name = "rsa"
 version = "4.9.1"
 source = { registry = "https://pypi.org/simple" }
@@ -1497,7 +1635,7 @@ wheels = [
 [[package]]
 name = "store"
 version = "0.1.0"
-source = { editable = "store" }
+source = { editable = "services/store" }
 dependencies = [
     { name = "alembic" },
     { name = "basedpyright" },
@@ -1537,8 +1675,8 @@ dev = [
 requires-dist = [
     { name = "alembic", specifier = ">=1.17.2" },
     { name = "basedpyright", specifier = ">=1.36.1" },
-    { name = "cl-ml-tools", editable = "packages/cl_ml_tools" },
-    { name = "cl-server-shared", editable = "shared" },
+    { name = "cl-ml-tools", editable = "services/packages/cl_ml_tools" },
+    { name = "cl-server-shared", editable = "services/shared" },
     { name = "fastapi", specifier = ">=0.127.0" },
     { name = "httpx", marker = "extra == 'dev'", specifier = ">=0.28.1" },
     { name = "marshmallow", specifier = ">=4.1.2" },
