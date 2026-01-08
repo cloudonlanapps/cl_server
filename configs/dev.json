@@ -2,21 +2,21 @@
   "data_dir": "/tmp/cl_server_data",
   "log_dir": "/tmp/cl_server_logs",
   "auth": {
-    "dir": "/Users/anandasarangaram/Work/cl_server/services/auth",
+    "dir": "services/auth",
     "port": 8010
   },
   "store": {
-    "dir": "/Users/anandasarangaram/Work/cl_server/services/store",
+    "dir": "services/store",
     "port": 8011
   },
   "compute": {
-    "dir": "/Users/anandasarangaram/Work/cl_server/services/compute",
+    "dir": "services/compute",
     "port": 8012
   },
   "workers": [
     {
       "id": "dev-worker-8012-1",
-      "dir": "/Users/anandasarangaram/Work/cl_server/services/compute",
+      "dir": "services/compute",
       "tasks": [
         "clip_embedding",
         "dino_embedding",
@@ -31,7 +31,7 @@
     },
     {
       "id": "dev-worker-8012-2",
-      "dir": "/Users/anandasarangaram/Work/cl_server/services/compute",
+      "dir": "services/compute",
       "tasks": [
         "clip_embedding",
         "dino_embedding",
