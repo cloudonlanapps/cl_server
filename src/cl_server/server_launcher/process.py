@@ -1,25 +1,26 @@
-import subprocess
 import os
 import signal
+import subprocess
 import time
-from typing import Optional
-from loguru import logger
 
 import requests
+from loguru import logger
 from pydantic import BaseModel
+
+from .config import Config
 from .services import ServiceArgs
 
 
 class Processes(BaseModel):
     model_config = {"arbitrary_types_allowed": True}
 
-    auth: Optional[subprocess.Popen] = None
-    store: Optional[subprocess.Popen] = None
-    compute: Optional[subprocess.Popen] = None
-    workers: list[subprocess.Popen] = []
+    auth: subprocess.Popen[str] | None = None
+    store: subprocess.Popen[str] | None = None
+    compute: subprocess.Popen[str] | None = None
+    workers: list[subprocess.Popen[str]] = []
 
 
-def start_process(service: ServiceArgs) -> subprocess.Popen:
+def start_process(service: ServiceArgs) -> subprocess.Popen[str]:
     """Start a service subprocess.
 
     Args:
@@ -44,7 +45,7 @@ def start_process(service: ServiceArgs) -> subprocess.Popen:
     except OSError as e:
         raise OSError(f"Failed to open log file {service.log_file}: {e}") from e
 
-    return subprocess.Popen(
+    return subprocess.Popen[str](
         service.cmd,
         cwd=service.cwd,
         env=service.env,
@@ -72,10 +73,10 @@ def is_server_healthy(url: str, timeout: float = 1) -> bool:
 
 
 def stop_process(
-    proc: Optional[subprocess.Popen],
+    proc: subprocess.Popen[str] | None,
     name: str = "Process",
     timeout: int = 5,
-    health_url: Optional[str] = None,
+    health_url: str | None = None,
 ) -> bool:
     """Stop a process gracefully with timeout and health check.
 
@@ -134,7 +135,7 @@ def stop_process(
     return False
 
 
-def stop_all_processes(processes: Processes, config=None):
+def stop_all_processes(processes: Processes, config: Config | None = None):
     """Stop all running processes.
 
     Shutdown order:

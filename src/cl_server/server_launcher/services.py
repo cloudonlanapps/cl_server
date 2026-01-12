@@ -1,5 +1,8 @@
 from pathlib import Path
+
 from pydantic import BaseModel
+
+from .config import Config
 
 
 class ServiceArgs(BaseModel):
@@ -16,8 +19,8 @@ class Services(BaseModel):
     workers: list[ServiceArgs]
 
 
-def build_services(cfg, env) -> Services:
-    workers = []
+def build_services(cfg: Config, env: dict[str, str]) -> Services:
+    workers: list[ServiceArgs] = []
     for i, worker_cfg in enumerate(cfg.workers):
         workers.append(
             ServiceArgs(

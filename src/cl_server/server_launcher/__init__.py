@@ -1,16 +1,23 @@
-import argparse
 import os
 import signal
 import sys
 import threading
 import time
+from argparse import ArgumentParser, Namespace
+from typing import TYPE_CHECKING, Any
+
 import requests
 from loguru import logger
 
 from .config import load_config
+from .migrate import migrate_auth, migrate_compute, migrate_store
+from .process import Processes, start_process, stop_all_processes
 from .services import build_services
-from .process import start_process, stop_all_processes, Processes
-from .migrate import migrate_auth, migrate_store, migrate_compute
+
+if TYPE_CHECKING:
+    from types import FrameType
+else:
+    FrameType = Any  # type: ignore[misc]
 
 
 def wait_for_server(url: str, timeout: int = 30):
@@ -29,10 +36,9 @@ def wait_for_server(url: str, timeout: int = 30):
 shutdown_event = threading.Event()
 
 
-def _handle_signal(signum, frame):
+def _handle_signal(signum: int, frame: FrameType | None) -> None:
     """Handle shutdown signals safely without reentrant I/O."""
     # Use os.write for async-signal-safe I/O instead of print or logging
-    import errno
 
     msg = f"\nReceived signal {signum}, shutting down…\n"
     try:
@@ -43,10 +49,17 @@ def _handle_signal(signum, frame):
     shutdown_event.set()
 
 
+class Args(Namespace):
+    config: str
+
+    def __init__(self, config: str = ""):
+        self.config = config
+
+
 def main():
-    parser = argparse.ArgumentParser()
+    parser = ArgumentParser()
     parser.add_argument("--config", required=True)
-    args = parser.parse_args()
+    args = parser.parse_args(namespace=Args())
 
     cfg = load_config(args.config)
 
