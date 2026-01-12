@@ -9,6 +9,7 @@ dependencies = [
     "loguru>=0.7.3",
     "pydantic>=2.12.5",
     "requests>=2.31.0",
+    "ruff>=0.14.10",
 ]
 
 [tool.uv]

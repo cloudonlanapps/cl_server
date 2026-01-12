@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel
 
 
 class ServiceConfig(BaseModel):
