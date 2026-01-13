@@ -5,13 +5,14 @@ import time
 
 import requests
 from loguru import logger
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 from .config import Config
 from .services import ServiceArgs
 
 
 class Processes(BaseModel):
+    model_config = ConfigDict(arbitrary_types_allowed=True)
     auth: subprocess.Popen[str] | None = None
     store: subprocess.Popen[str] | None = None
     compute: subprocess.Popen[str] | None = None
