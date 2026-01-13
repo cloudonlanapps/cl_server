@@ -39,10 +39,10 @@ shutdown_event = threading.Event()
 def _handle_signal(signum: int, frame: FrameType | None) -> None:
     """Handle shutdown signals safely without reentrant I/O."""
     # Use os.write for async-signal-safe I/O instead of print or logging
-
+    _ = frame
     msg = f"\nReceived signal {signum}, shutting down…\n"
     try:
-        os.write(sys.stderr.fileno(), msg.encode())
+        _ = os.write(sys.stderr.fileno(), msg.encode())
     except OSError:
         # If stderr write fails, just silently set the event
         pass
@@ -54,11 +54,12 @@ class Args(Namespace):
 
     def __init__(self, config: str = ""):
         self.config = config
+        super().__init__()
 
 
 def main():
     parser = ArgumentParser()
-    parser.add_argument("--config", required=True)
+    _ = parser.add_argument("--config", required=True)
     args = parser.parse_args(namespace=Args())
 
     cfg = load_config(args.config)
@@ -119,12 +120,12 @@ def main():
             logger.success(f"worker {i + 1}/{len(services.workers)} started")
 
         # Signals
-        signal.signal(signal.SIGINT, _handle_signal)  # Ctrl+C
-        signal.signal(signal.SIGQUIT, _handle_signal)  # Ctrl+\
-        signal.signal(signal.SIGTERM, _handle_signal)
+        _ = signal.signal(signal.SIGINT, _handle_signal)  # Ctrl+C
+        _ = signal.signal(signal.SIGQUIT, _handle_signal)  # Ctrl+\
+        _ = signal.signal(signal.SIGTERM, _handle_signal)
 
         logger.success("All services started. Press Ctrl+C / Ctrl+\\ to stop.")
-        shutdown_event.wait()
+        _ = shutdown_event.wait()
 
     finally:
         stop_all_processes(processes, cfg)

@@ -1,25 +1,53 @@
 {
-  "venvPath": ".",
-  "venv": ".venv",
+ 
+  "typeCheckingMode": "strict",
+
+  // Global include: all service src folders
   "include": [
-    "src"
+    "services/auth/src",
+    "services/shared/src",
+    "services/store/src",
+    "services/compute/src",
+    "sdks/pysdk/src"
   ],
+
   "exclude": [
     "**/__pycache__",
     "**/node_modules",
-    ".venv"
+    "**/.venv",
+    "**/build",
+    "**/dist"
   ],
-  "reportMissingTypeStubs": true,
+
+  // FastAPI / Depends fix
   "reportCallInDefaultInitializer": "none",
-  "extraPaths": [
-    "src"
-  ],
-  "typeCheckingMode": "strict",
-  "reportAny": "error",
-  "reportUnknownVariableType": "error",
-  "reportUnknownMemberType": "error",
-  "reportUnknownArgumentType": "error",
-  "reportUnknownParameterType": "error",
-  "reportMissingTypeArgument": "error",
-  "pythonVersion": "3.12"
+
+
+
+  "executionEnvironments": [
+    {
+      "root": "services/auth",
+      "extraPaths": ["services/auth/src"]
+    },
+    {
+      "root": "services/shared",
+      "extraPaths": ["services/shared/src"]
+    },
+    {
+      "root": "services/store",
+      "extraPaths": ["services/store/src", "services/store/typings"]
+    },
+    {
+      "root": "services/compute",
+      "extraPaths": ["services/compute/src"]
+    },
+    {
+      "root": "sdks/pysdk",
+      "extraPaths": ["sdks/pysdk/src"]
+    },
+    {
+      // This matches your final `uv run basedpyright`
+      "root": "."
+    }
+  ]
 }

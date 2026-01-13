@@ -12,8 +12,6 @@ from .services import ServiceArgs
 
 
 class Processes(BaseModel):
-    model_config = {"arbitrary_types_allowed": True}
-
     auth: subprocess.Popen[str] | None = None
     store: subprocess.Popen[str] | None = None
     compute: subprocess.Popen[str] | None = None
@@ -121,7 +119,7 @@ def stop_process(
         pass
 
     try:
-        proc.wait(timeout=1)
+        _ = proc.wait(timeout=1)
     except subprocess.TimeoutExpired:
         pass
 
@@ -153,24 +151,24 @@ def stop_all_processes(processes: Processes, config: Config | None = None):
     # Stop workers first (no health check for workers)
     for i, proc in enumerate(processes.workers):
         logger.info(f"Stopping worker {i + 1}/{len(processes.workers)}...")
-        stop_process(proc, f"worker-{i}")
+        _ = stop_process(proc, f"worker-{i}")
 
     # Stop store
     if processes.store:
         logger.info("Stopping store...")
         health_url = config.store_url if config else None
-        stop_process(processes.store, "store", health_url=health_url)
+        _ = stop_process(processes.store, "store", health_url=health_url)
 
     # Stop compute
     if processes.compute:
         logger.info("Stopping compute...")
         health_url = config.compute_url if config else None
-        stop_process(processes.compute, "compute", health_url=health_url)
+        _ = stop_process(processes.compute, "compute", health_url=health_url)
 
     # Stop auth
     if processes.auth:
         logger.info("Stopping auth...")
         health_url = config.auth_url if config else None
-        stop_process(processes.auth, "auth", health_url=health_url)
+        _ = stop_process(processes.auth, "auth", health_url=health_url)
 
     logger.success("All services stopped.")
