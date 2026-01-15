@@ -33,3 +33,4 @@
 [submodule "services/packages/cl_ml_tools"]
 	path = services/packages/cl_ml_tools
 	url = git@github.com:cloudonlanapps/cl_ml_tools.git
+	branch = main
