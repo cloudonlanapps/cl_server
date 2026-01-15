@@ -6,7 +6,8 @@
     "services/shared/src",
     "services/store/src",
     "services/compute/src",
-    "sdks/pysdk/src"
+    "sdks/pysdk/src",
+    "apps/cli_python/src"
   ],
   "exclude": [
     "**/__pycache__",
@@ -53,6 +54,12 @@
       "root": "sdks/pysdk",
       "extraPaths": [
         "sdks/pysdk/src"
+      ]
+    },
+    {
+      "root": "apps/cli_python",
+      "extraPaths": [
+        "apps/cli_python"
       ]
     },
     {
