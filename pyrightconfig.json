@@ -20,8 +20,8 @@
     {
       "root": "services/packages/cl_ml_tools",
       "extraPaths": [
-        "src",
-        "typings"
+        "services/packages/cl_ml_tools/src",
+        "services/packages/cl_ml_tools/typings"
       ]
     },
     {
