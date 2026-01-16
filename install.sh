@@ -10,3 +10,4 @@ uv pip install -e services/auth
 uv pip install -e services/shared
 uv pip install -e services/store
 uv pip install -e services/compute
+uv pip install -e apps/cli_python
