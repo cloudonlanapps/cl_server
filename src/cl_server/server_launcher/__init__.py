@@ -82,10 +82,10 @@ def main():
         logger.info("Running database migrations...")
         if not migrate_auth(cfg.auth.dir, env):
             sys.exit("[ERROR] Auth service migration failed")
-        if not migrate_store(cfg.store.dir, env):
-            sys.exit("[ERROR] Store service migration failed")
         if not migrate_compute(cfg.compute.dir, env):
             sys.exit("[ERROR] Compute service migration failed")
+        if not migrate_store(cfg.store.dir, env):
+            sys.exit("[ERROR] Store service migration failed")
 
         # Start auth (required by all other services)
         logger.info(f"Starting auth server @ port {cfg.auth.port}...")

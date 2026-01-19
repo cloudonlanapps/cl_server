@@ -14,10 +14,6 @@
 	path = services/store
 	url = git@github.com:cloudonlanapps/cl_server_store_service.git
 	branch = main
-[submodule "services/shared"]
-	path = services/shared
-	url = git@github.com:cloudonlanapps/cl_server_shared.git
-	branch = main
 [submodule "apps/cli_python"]
 	path = apps/cli_python
 	url = git@github.com:cloudonlanapps/cl_server_cli_python.git

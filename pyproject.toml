@@ -37,12 +37,11 @@ members = [
     "services/auth",
     "services/compute",
     "services/store",
-    "services/shared",
+  
     "services/packages/cl_ml_tools",
     "apps/cli_python",
     "sdks/pysdk",
 ]
 
 [tool.uv.sources]
-cl-server-shared = { workspace = true }
 cl-ml-tools = { workspace = true }
