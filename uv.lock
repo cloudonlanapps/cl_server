@@ -260,7 +260,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "basedpyright", specifier = ">=1.36.2" },
-    { name = "cl-client", extras = ["dev"], marker = "extra == 'all'" },
+    { name = "cl-client", extras = ["dev"], marker = "extra == 'all'", editable = "sdks/pysdk" },
     { name = "click", specifier = ">=8.1.0" },
     { name = "httpx", specifier = ">=0.28.1" },
     { name = "httpx", marker = "extra == 'dev'", specifier = ">=0.28.1" },
@@ -1251,6 +1251,7 @@ source = { editable = "services/store" }
 dependencies = [
     { name = "alembic" },
     { name = "basedpyright" },
+    { name = "cl-client" },
     { name = "cl-ml-tools" },
     { name = "fastapi" },
     { name = "loguru" },
@@ -1284,6 +1285,7 @@ dev = [
 requires-dist = [
     { name = "alembic", specifier = ">=1.17.2" },
     { name = "basedpyright", specifier = ">=1.36.1" },
+    { name = "cl-client", editable = "sdks/pysdk" },
     { name = "cl-ml-tools", editable = "services/packages/cl_ml_tools" },
     { name = "fastapi", specifier = ">=0.127.0" },
     { name = "httpx", marker = "extra == 'dev'", specifier = ">=0.28.1" },

@@ -45,3 +45,4 @@ members = [
 
 [tool.uv.sources]
 cl-ml-tools = { workspace = true }
+cl-client = { workspace = true } 
