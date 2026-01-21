@@ -1,0 +1,213 @@
+# [Package/Service Name]
+
+[1-2 sentence description of what this package does]
+
+[Optional: Key technical info badges/table - only for services]
+**Server Port:** [port number] (default, configurable)
+**Authentication Method:** [e.g., JWT with ES256]
+**Package Manager:** uv
+**Database:** [e.g., SQLite with WAL mode]
+
+> **For Developers:** See [INTERNALS.md](INTERNALS.md) for package structure, development workflow, and contribution guidelines.
+>
+> **For Testing:** See [tests/README.md](tests/README.md) for comprehensive testing guide, test organization, and coverage requirements.
+
+## Features
+
+- 🚀 **[Feature 1]**: [Description]
+- 📡 **[Feature 2]**: [Description]
+- 🔌 **[Feature 3]**: [Description]
+- [List 3-7 key features with emojis and brief descriptions]
+
+## Quick Start
+
+### Prerequisites
+
+- Python 3.12+
+- [uv](https://github.com/astral-sh/uv) package manager
+- [Other prerequisites specific to this package]
+
+```bash
+# Install uv (if not already installed)
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
+### Installation
+
+**Individual Package Installation:**
+
+```bash
+# Navigate to package directory
+cd [path/to/package]
+
+# Install dependencies (uv will create .venv automatically)
+uv sync
+
+# [Optional: Run database migrations if applicable]
+# uv run alembic upgrade head
+```
+
+**Workspace Installation (All Packages):**
+
+See root [README.md](../../README.md) for installing all packages using `./install.sh`.
+
+## CLI Commands & Usage
+
+[Note: Document ALL scripts defined in pyproject.toml [project.scripts]]
+[Note: Only document CL_SERVER_DIR if actually used by this service]
+
+### [Command 1: script-name]
+
+[Description of what this script does]
+
+```bash
+# Basic usage
+uv run [script-name]
+
+# With options
+uv run [script-name] --option1 value --option2 value
+
+# Example
+uv run [script-name] --host 0.0.0.0 --port 8000 --log-level info
+```
+
+**Available Options:**
+- `--option1 VALUE` - [Description] (default: [value])
+- `--option2 VALUE` - [Description] (default: [value])
+- `--help` - Show all options
+
+[Repeat for each CLI script in pyproject.toml]
+
+## API Endpoints
+
+[**IMPORTANT:** This section is ONLY for services that expose HTTP APIs (FastAPI services)]
+[For SDKs, libraries, and CLI tools, REMOVE this entire section]
+
+All endpoints return JSON responses. The service runs on port [PORT].
+
+### Public Endpoints (No Authentication Required)
+
+#### 1. Health Check
+```
+GET /
+```
+
+**Response:**
+```json
+{
+  "message": "service is running"
+}
+```
+
+**Example:**
+```bash
+curl http://localhost:[PORT]/
+```
+
+---
+
+#### 2. [Endpoint Name]
+```
+[METHOD] /path
+```
+
+**Request Body:**
+```json
+{
+  "field1": "value",
+  "field2": "value"
+}
+```
+
+**Response (200):**
+```json
+{
+  "result": "value"
+}
+```
+
+**Status Codes:**
+- `200 OK` - [Description]
+- `400 Bad Request` - [Description]
+- `404 Not Found` - [Description]
+
+**Example:**
+```bash
+curl -X [METHOD] http://localhost:[PORT]/path \
+  -H "Content-Type: application/json" \
+  -d '{"field1": "value"}'
+```
+
+---
+
+### Protected Endpoints (Require Valid JWT Token)
+
+Include the token in the `Authorization` header:
+```
+Authorization: Bearer <token>
+```
+
+#### 3. [Protected Endpoint Name]
+```
+[METHOD] /path
+```
+
+[Follow same format as above]
+
+---
+
+### Admin Endpoints (Require Valid Token + Admin Privilege)
+
+[Document admin-only endpoints if applicable]
+
+---
+
+## [Additional Sections as Needed]
+
+### Configuration
+
+[If the service has configuration beyond CLI options]
+
+### Advanced Usage
+
+[Advanced features, workflows, or patterns]
+
+### Integration Examples
+
+[How to integrate this service with others, code examples]
+
+## Error Handling / Troubleshooting
+
+### [Common Issue 1]
+
+**Issue:** [Description of the problem]
+
+**Solutions:**
+- [Solution 1]
+- [Solution 2]
+
+```bash
+# Example fix commands
+command-to-fix-issue
+```
+
+### [Common Issue 2]
+
+[Follow same pattern]
+
+## Documentation
+
+- **[INTERNALS.md](./INTERNALS.md)** - Developer documentation, architecture, contributing guide
+- **[tests/README.md](./tests/README.md)** - Testing guide with fixtures and patterns
+- **[Architecture Overview](../../docs/ARCHITECTURE.md)** - System-wide architecture and inter-service communication
+
+## License
+
+MIT License - see [LICENSE](./LICENSE) file for details.
+
+## Future Enhancements
+
+[Optional: List of planned features or improvements]
+
+- [Enhancement 1]
+- [Enhancement 2]

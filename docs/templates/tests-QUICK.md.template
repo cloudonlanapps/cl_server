@@ -1,0 +1,28 @@
+# QUICK – Test Commands
+
+## Run all unit tests
+
+```bash
+uv run pytest tests/ -v -m "not integration"
+```
+
+[Optional: Duration estimate, e.g., "Duration: ~0.3 seconds"]
+[Optional: Note if no external services required]
+
+## Run all tests
+
+```bash
+uv run pytest
+```
+
+[Optional: Duration estimate]
+[Optional: Coverage percentage note]
+
+## Run all integration tests
+
+```bash
+uv run pytest tests/test_integration/ -v
+```
+
+[Optional: Duration estimate, e.g., "Duration: ~3-5 minutes"]
+[Optional: Note about server requirements with URLs if applicable, e.g., "Servers must be started first"]

@@ -1,0 +1,154 @@
+# Tests for [Package Name]
+
+This directory contains the test suite for [package description]. The tests are written using `pytest` and cover [key areas tested].
+
+[Optional: Only if package has both unit and integration tests]
+## Overview & Structure
+
+The test suite is organized into two categories:
+
+- **Unit tests** (`test_*.py`) — [Description, e.g., "Test individual components with mocked dependencies"]
+- **Integration tests** (`test_integration/`) — [Description, e.g., "Test against live services"]
+
+## Prerequisites
+
+- Python 3.12+
+- [uv](https://github.com/astral-sh/uv) package manager
+- Dependencies installed via `uv sync`
+- [Other prerequisites like running services, test media files, etc.]
+
+**Note:** With uv, you don't need to manually create or activate virtual environments. Use `uv run` to execute commands in the automatically managed environment.
+
+## Running Tests
+
+### Run All Tests
+
+To run the entire test suite with coverage:
+
+```bash
+uv run pytest
+```
+
+**Coverage requirement:** [X]% (configured in `pyproject.toml`)
+
+### Run Specific Test Files
+
+To run tests from a specific file:
+
+```bash
+uv run pytest tests/test_file1.py -v
+uv run pytest tests/test_file2.py -v
+```
+
+### Run Individual Tests
+
+To run a specific test function:
+
+```bash
+uv run pytest tests/test_file.py::test_function_name -v
+
+# Or specific test in a class
+uv run pytest tests/test_file.py::TestClassName::test_method_name -v
+```
+
+### Coverage Options
+
+**Default behavior:** Coverage is automatically collected with HTML + terminal reports and requires ≥[X]% coverage.
+
+```bash
+# Run tests with coverage (generates htmlcov/ directory + terminal report)
+uv run pytest
+
+# Skip coverage for quick testing
+uv run pytest --no-cov
+
+# Override coverage threshold (e.g., for debugging)
+uv run pytest --cov-fail-under=0
+```
+
+Coverage reports are saved to `htmlcov/index.html` - open this file in a browser to view detailed coverage.
+
+## Test Organization
+
+[If unit and integration tests are separated, document the structure]
+
+### Unit Tests
+
+[Description of unit tests]
+
+```
+test_file1.py                    # [Description] ([N] tests)
+  TestClass1                     # [Description] ([N] tests)
+    - test_feature1
+    - test_feature2
+  TestClass2                     # [Description]
+    - test_feature3
+```
+
+### Integration Tests
+
+[Description of integration tests]
+
+```
+test_integration/
+  test_integration_file.py       # [Description] ([N] tests)
+  conftest.py                    # Integration test fixtures
+  README.md                      # Integration test documentation
+```
+
+## Test Structure
+
+The tests are organized into the following files:
+
+| File | Description |
+|------|-------------|
+| `tests/test_file1.py` | [Description of what this file tests] |
+| `tests/test_file2.py` | [Description] |
+| `tests/test_file3.py` | [Description] |
+| `tests/conftest.py` | Pytest fixtures for [fixtures provided] |
+
+## [Optional: Service Requirements]
+
+[If tests require running services]
+
+Integration tests require **running services**:
+
+```
+Service 1:    http://localhost:[PORT]
+Service 2:    http://localhost:[PORT]
+```
+
+### Starting Services
+
+[Brief instructions or reference to how to start services]
+
+## [Optional: Test Media / Special Setup]
+
+[If tests require test media files or special configuration]
+
+## [Optional: Test Details]
+
+[Detailed breakdown of what each test file/class covers - use only if valuable]
+
+## Configuration
+
+The test configuration is defined in `pyproject.toml` under `[tool.pytest.ini_options]`:
+- **Test Paths**: `tests`
+- **Coverage**: Automatically enabled with HTML + terminal reports
+- **Coverage Threshold**: [X]% minimum (tests fail if below)
+- **Markers**: [List any custom pytest markers, e.g., `integration`]
+
+## [Optional: Troubleshooting]
+
+### [Common Issue 1]
+
+[Solution]
+
+```bash
+# Example fix
+command-to-fix
+```
+
+## Quick Reference
+
+For a quick command reference, see [QUICK.md](QUICK.md).

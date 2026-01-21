@@ -1,0 +1,56 @@
+graph TD
+    %% Workflow Start
+    Start([Image Ingested]) --> Worker[mInsight Worker]
+    
+    %% Enqueue Phase
+    subgraph SQLite ["SQLite DB"]
+        ITL[(image_intelligence)]
+        EJ[(entity_jobs)]
+        F[(faces)]
+        KP[(known_persons)]
+        FM[(face_matches)]
+    end
+
+    Worker   -- setup -->  ITL 
+    Worker   -- trigger -->  Service[Intelligence Service]
+
+    %% Compute Phase
+    subgraph Compute ["Compute Service"]
+        CE[Compute Endpoint]
+        FDJ[Face Detection Job]
+        CEJ[CLIP Embedding Job]
+        DEJ[DINO Embedding Job]
+        FEJ[Face Embedding Job]
+    end
+
+    Service  -- submits --> CE
+    CE --> FDJ
+    CE --> CEJ
+    CE --> DEJ
+    
+    %% Logic & DB Updates
+    FDJ -- Callback --> EJ
+    FDJ -- Callback --> CB1[Handle Detect]
+    CB1 -->|Write| F
+    CB1 -->|Submit| CE
+    CE --> FEJ
+
+    CEJ -- Callback --> EJ
+    CEJ -- Callback --> CB2[Handle CLIP]
+    CB2 -->|Store| Q_CLIP[(Qdrant: CLIP)]
+
+    DEJ -- Callback --> EJ
+    DEJ -- Callback --> CB3[Handle DINO]
+    CB3 -->|Store| Q_DINO[(Qdrant: DINO)]
+
+    FEJ -- Callback --> EJ
+    FEJ -- Callback --> CB4[Handle Face Embed]
+    CB4 -->|Match & Link| KP
+    CB4 -->|Record Match| FM
+    CB4 -->|Store| Q_FACE[(Qdrant: FACE)]
+
+    subgraph Qdrant ["Qdrant Vector Store"]
+        Q_CLIP
+        Q_DINO
+        Q_FACE
+    end

@@ -1,0 +1,156 @@
+# [Package Name] - Internal Documentation
+
+This document contains development-related information for contributors working on [package name].
+
+## Package Structure
+
+```
+package-name/
+├── src/package_name/      # Main application package
+│   ├── __init__.py        # [Description]
+│   ├── main.py            # CLI entry point (if applicable)
+│   ├── models.py          # [Description]
+│   ├── routes.py          # [Description - for services]
+│   ├── service.py         # [Description]
+│   └── ...
+├── tests/                 # Test suite
+│   ├── conftest.py        # Pytest fixtures
+│   ├── test_*.py          # Test files
+│   └── README.md          # Testing documentation
+├── alembic/               # Database migrations (if applicable)
+│   ├── versions/          # Migration scripts
+│   └── env.py            # Alembic configuration
+├── pyproject.toml         # Package configuration
+├── README.md              # User documentation
+└── INTERNALS.md           # This file
+```
+
+**Key Design:**
+- [Design decision 1]
+- [Design decision 2]
+- [Technology choice 1]
+- [Technology choice 2]
+
+## Development
+
+### Running Tests
+
+See [tests/README.md](tests/README.md) for detailed information on running tests, coverage options, and test structure.
+
+**Quick commands:**
+```bash
+# Run all tests (coverage automatic: HTML + terminal reports, [X]% required)
+uv run pytest
+
+# Run specific test file
+uv run pytest tests/test_file.py -v
+
+# Skip coverage for quick testing
+uv run pytest --no-cov
+```
+
+**Coverage:** Automatically enabled via `pyproject.toml` - generates `htmlcov/` directory + terminal report, requires ≥[X]%
+
+### Database Migrations
+
+[Only include if package uses database migrations]
+
+```bash
+# Create a new migration
+uv run alembic revision --autogenerate -m "Description"
+
+# Apply migrations
+uv run alembic upgrade head
+
+# Rollback one migration
+uv run alembic downgrade -1
+
+# Check current version
+uv run alembic current
+```
+
+### Code Quality
+
+```bash
+# Format code
+uv run ruff format src/
+
+# Lint code
+uv run ruff check src/
+
+# Fix linting issues
+uv run ruff check --fix src/
+
+# Type checking (if configured)
+uv run basedpyright
+```
+
+### Development Workflow
+
+1. **Make changes** to code in `src/package_name/`
+2. **Run tests** to ensure everything works: `uv run pytest`
+3. [**Create migration** if models changed: `uv run alembic revision --autogenerate -m "description"`] (if applicable)
+4. **Test the [server/package]** [with appropriate command, e.g., `uv run script-name --reload`]
+5. **Commit** your changes
+
+### Adding Dependencies
+
+```bash
+# Add a new dependency
+uv add package-name
+
+# Add a development dependency
+uv add --dev package-name
+
+# Update all dependencies
+uv sync --upgrade
+```
+
+## Architecture
+
+[**IMPORTANT:** Focus on package-specific architecture only]
+[Do NOT document inter-service communication - that belongs in docs/ARCHITECTURE.md]
+
+### [Component 1]
+
+[Explanation of internal component architecture]
+
+### [Component 2]
+
+[Design patterns specific to this package]
+
+### [Database Design / Plugin System / Other Package-Specific Topics]
+
+[Package-specific architectural details]
+
+**Note:** For system-wide architecture and inter-service communication, see [docs/ARCHITECTURE.md](../../docs/ARCHITECTURE.md) in the repository root.
+
+## Testing Strategy
+
+Tests are organized by functionality:
+- `test_file1.py` - [Description of what this file tests]
+- `test_file2.py` - [Description]
+- `test_file3.py` - [Description]
+
+All tests use in-memory SQLite databases (if applicable) and isolated test clients.
+
+[Brief description of testing tools and patterns used]
+
+## Future Enhancements
+
+### [Category 1: e.g., Security & Token Management]
+- [Enhancement 1]
+- [Enhancement 2]
+
+### [Category 2: e.g., User Management Features]
+- [Enhancement 1]
+- [Enhancement 2]
+
+## Contributing
+
+When contributing to this [service/package]:
+1. Maintain [X]%+ test coverage
+2. Run linter and formatter before committing
+3. [Create migrations for any model changes] (if applicable)
+4. Update API documentation in README.md for user-facing changes
+5. Add entries to Future Enhancements section for planned features
