@@ -111,6 +111,13 @@ def main():
         wait_for_server(cfg.store_url)
         logger.success("store service started")
 
+        # Start m_insight (requires store)
+        logger.info("Starting m_insight worker...")
+        processes.m_insight = start_process(services.m_insight)
+        # m_insight has no HTTP health check, simple sleep to ensure startup
+        time.sleep(1)
+        logger.success("m_insight worker started")
+
         # Start workers (require auth and compute)
         for i, worker_service in enumerate(services.workers):
             logger.info(

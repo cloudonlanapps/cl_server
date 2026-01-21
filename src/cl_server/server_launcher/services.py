@@ -15,6 +15,7 @@ class ServiceArgs(BaseModel):
 class Services(BaseModel):
     auth: ServiceArgs
     store: ServiceArgs
+    m_insight: ServiceArgs
     compute: ServiceArgs
     workers: list[ServiceArgs]
 
@@ -55,10 +56,28 @@ def build_services(cfg: Config, env: dict[str, str]) -> Services:
                 "store",
                 "--port",
                 str(cfg.store.port),
+                "--mqtt-server",
+                cfg.mqtt_broker,
+                *(["--mqtt-port", str(cfg.mqtt_port)] if cfg.mqtt_port else []),
             ],
             cwd=cfg.store.dir,
             env=env,
             log_file=cfg.log_dir / "store.log",
+        ),
+        m_insight=ServiceArgs(
+            cmd=[
+                "uv",
+                "run",
+                "m-insight-worker",
+                "--store-port",
+                str(cfg.store.port),
+                "--mqtt-broker",
+                cfg.mqtt_broker,
+                *(["--mqtt-port", str(cfg.mqtt_port)] if cfg.mqtt_port else []),
+            ],
+            cwd=cfg.store.dir,
+            env=env,
+            log_file=cfg.log_dir / "m-insight.log",
         ),
         compute=ServiceArgs(
             cmd=[

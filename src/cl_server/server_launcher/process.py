@@ -15,6 +15,7 @@ class Processes(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
     auth: subprocess.Popen[str] | None = None
     store: subprocess.Popen[str] | None = None
+    m_insight: subprocess.Popen[str] | None = None
     compute: subprocess.Popen[str] | None = None
     workers: list[subprocess.Popen[str]] = []
 
@@ -159,6 +160,12 @@ def stop_all_processes(processes: Processes, config: Config | None = None):
         logger.info("Stopping store...")
         health_url = config.store_url if config else None
         _ = stop_process(processes.store, "store", health_url=health_url)
+
+    # Stop m_insight
+    if processes.m_insight:
+        logger.info("Stopping m_insight...")
+        # m_insight has no HTTP health check, so just stop it
+        _ = stop_process(processes.m_insight, "m_insight")
 
     # Stop compute
     if processes.compute:

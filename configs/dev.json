@@ -44,5 +44,7 @@
         "media_thumbnail"
       ]
     }
-  ]
+  ],
+  "mqtt_port": 1883,
+  "mqtt_broker": "localhost"
 }
