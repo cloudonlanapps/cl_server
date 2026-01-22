@@ -51,15 +51,22 @@ def _handle_signal(signum: int, frame: FrameType | None) -> None:
 
 class Args(Namespace):
     config: str
+    services: str
 
-    def __init__(self, config: str = ""):
+    def __init__(self, config: str = "", services: str = "all"):
         self.config = config
+        self.services = services
         super().__init__()
 
 
 def main():
     parser = ArgumentParser()
     _ = parser.add_argument("--config", required=True)
+    _ = parser.add_argument(
+        "--services",
+        default="all",
+        help="Comma-separated list of services to start: auth,compute,store,m_insight,workers or 'all'",
+    )
     args = parser.parse_args(namespace=Args())
 
     cfg = load_config(args.config)
@@ -77,61 +84,71 @@ def main():
     services = build_services(cfg, env)
     processes = Processes()
 
+    requested_services = set(args.services.split(",")) if args.services != "all" else {"all"}
+
+    def should_start(name: str) -> bool:
+        return "all" in requested_services or name in requested_services
+
     try:
         # Run database migrations before starting services
         logger.info("Running database migrations...")
-        if not migrate_auth(cfg.auth.dir, env):
+        if should_start("auth") and not migrate_auth(cfg.auth.dir, env):
             sys.exit("[ERROR] Auth service migration failed")
-        if not migrate_compute(cfg.compute.dir, env):
+        if should_start("compute") and not migrate_compute(cfg.compute.dir, env):
             sys.exit("[ERROR] Compute service migration failed")
-        if not migrate_store(cfg.store.dir, env):
+        if should_start("store") and not migrate_store(cfg.store.dir, env):
             sys.exit("[ERROR] Store service migration failed")
 
         # Start auth (required by all other services)
-        logger.info(f"Starting auth server @ port {cfg.auth.port}...")
-        processes.auth = start_process(services.auth)
-        wait_for_server(cfg.auth_url)
-        logger.success("auth service started")
+        if should_start("auth"):
+            logger.info(f"Starting auth server @ port {cfg.auth.port}...")
+            processes.auth = start_process(services.auth)
+            wait_for_server(cfg.auth_url)
+            logger.success("auth service started")
 
         # Start compute (required by store and workers)
-        logger.info(f"Starting compute server @ port {cfg.compute.port}...")
-        processes.compute = start_process(services.compute)
+        if should_start("compute"):
+            logger.info(f"Starting compute server @ port {cfg.compute.port}...")
+            processes.compute = start_process(services.compute)
 
-        # Wait for compute to load auth module and cache public key
-        time.sleep(1)
-        wait_for_server(cfg.compute_url)
-        logger.success("compute service started")
+            # Wait for compute to load auth module and cache public key
+            time.sleep(1)
+            wait_for_server(cfg.compute_url)
+            logger.success("compute service started")
 
         # Start store (requires auth and compute)
-        logger.info(f"Starting store server @ port {cfg.store.port}...")
-        processes.store = start_process(services.store)
+        if should_start("store"):
+            logger.info(f"Starting store server @ port {cfg.store.port}...")
+            processes.store = start_process(services.store)
 
-        # Wait for store to load auth module and cache public key
-        time.sleep(1)
-        wait_for_server(cfg.store_url)
-        logger.success("store service started")
+            # Wait for store to load auth module and cache public key
+            time.sleep(1)
+            wait_for_server(cfg.store_url)
+            logger.success("store service started")
 
         # Start m_insight (requires store)
-        logger.info("Starting m_insight worker...")
-        processes.m_insight = start_process(services.m_insight)
-        # m_insight has no HTTP health check, simple sleep to ensure startup
-        time.sleep(1)
-        logger.success("m_insight worker started")
+        if should_start("m_insight"):
+            logger.info("Starting m_insight worker...")
+            processes.m_insight = start_process(services.m_insight)
+            # m_insight has no HTTP health check, simple sleep to ensure startup
+            time.sleep(1)
+            logger.success("m_insight worker started")
 
         # Start workers (require auth and compute)
-        for i, worker_service in enumerate(services.workers):
-            logger.info(
-                f"Starting worker {i + 1}/{len(services.workers)} : listening to {cfg.compute.port}"
-            )
-            processes.workers.append(start_process(worker_service))
-            logger.success(f"worker {i + 1}/{len(services.workers)} started")
+        if should_start("workers"):
+            for i, worker_service in enumerate(services.workers):
+                logger.info(
+                    f"Starting worker {i + 1}/{len(services.workers)} : listening to {cfg.compute.port}"
+                )
+                processes.workers.append(start_process(worker_service))
+                logger.success(f"worker {i + 1}/{len(services.workers)} started")
 
         # Signals
         _ = signal.signal(signal.SIGINT, _handle_signal)  # Ctrl+C
         _ = signal.signal(signal.SIGQUIT, _handle_signal)  # Ctrl+\
         _ = signal.signal(signal.SIGTERM, _handle_signal)
 
-        logger.success("All services started. Press Ctrl+C / Ctrl+\\ to stop.")
+        logger.success("Press Ctrl+C / Ctrl+\\ to stop.")
         _ = shutdown_event.wait()
 
     finally:
