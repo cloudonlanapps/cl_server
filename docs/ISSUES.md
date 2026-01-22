@@ -8,20 +8,20 @@ This document catalogs all issues found during the documentation standardization
 
 | ID | Title | Level | Status |
 |----|-------|-------|--------|
-| DOC-001 | Environment Variables Section Obsolete | Critical | Complete (Store, Compute, pysdk) |
-| DOC-002 | Missing CLI Commands Documentation | High | Complete (Store, Compute, pysdk) |
-| DOC-003 | Inconsistent tests/QUICK.md Structure | High | Complete (pysdk) |
-| DOC-004 | Missing tests/QUICK.md Files | High | Complete (Store, Compute) |
-| DOC-005 | Testing Strategy in Wrong Location | Medium | Complete (Store, Compute, pysdk) |
-| DOC-006 | Architecture Documentation Scattered | High | Open |
-| DOC-007 | Missing Testing Redirect in README | Medium | Complete (Store, Compute, pysdk) |
+| DOC-001 | Environment Variables Section Obsolete | Critical | Complete (Store, Compute, pysdk, Auth) |
+| DOC-002 | Missing CLI Commands Documentation | High | Complete (Store, Compute, pysdk, Auth, CLI) |
+| DOC-003 | Inconsistent tests/QUICK.md Structure | High | Complete (pysdk, CLI) |
+| DOC-004 | Missing tests/QUICK.md Files | High | Complete (Store, Compute, Auth) |
+| DOC-005 | Testing Strategy in Wrong Location | Medium | Complete (Store, Compute, pysdk, Auth) |
+| DOC-006 | Architecture Documentation Scattered | High | Complete (Root) |
+| DOC-007 | Missing Testing Redirect in README | Medium | Complete (Store, Compute, pysdk, Auth, CLI) |
 | DOC-008 | Non-Standard Markdown Files | Medium | Complete (Store) |
 | DOC-009 | Pytest Cache README Files Committed | Low | Open |
-| DOC-010 | Inconsistent Installation Documentation | High | Complete (Store, Compute, pysdk) |
-| DOC-011 | API Endpoints Mixed with CLI Commands | High | Complete (Store, Compute, pysdk) |
-| DOC-012 | Inter-Service Communication in Package Docs | Medium | Complete (Store, Compute, pysdk) |
-| DOC-013 | Missing Workspace Installation Guide | Critical | Open |
-| DOC-014 | Outdated Documentation vs Code | Critical | Complete (Store, Compute, pysdk) |
+| DOC-010 | Inconsistent Installation Documentation | High | Complete (Store, Compute, pysdk, Auth, CLI) |
+| DOC-011 | API Endpoints Mixed with CLI Commands | High | Complete (Store, Compute, pysdk, Auth) |
+| DOC-012 | Inter-Service Communication in Package Docs | Medium | Complete (Store, Compute, pysdk, Auth) |
+| DOC-013 | Missing Workspace Installation Guide | Critical | Complete (Root) |
+| DOC-014 | Outdated Documentation vs Code | Critical | Complete (Store, Compute, pysdk, Auth) |
 | DOC-015 | Plugin System Documentation Location | Medium | Complete (Store, Compute) |
 
 ---
