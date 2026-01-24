@@ -1,0 +1,35 @@
+{
+  "data_dir": "/tmp/cl_server_data",
+  "log_dir": "/tmp/cl_server_logs",
+  "auth": {
+    "dir": "services/auth",
+    "port": 8010
+  },
+  "store": {
+    "dir": "services/store",
+    "port": 8011
+  },
+  "compute": {
+    "dir": "services/compute",
+    "port": 8012
+  },
+  "workers": [
+    {
+      "id": "dev-worker-8012-1",
+      "dir": "services/compute",
+      "tasks": [
+        "clip_embedding",
+        "dino_embedding",
+        "exif",
+        "face_detection",
+        "face_embedding",
+        "hash",
+        "hls_streaming",
+        "image_conversion",
+        "media_thumbnail"
+      ]
+    }
+  ],
+  "mqtt_port": 1883,
+  "mqtt_broker": "localhost"
+}
