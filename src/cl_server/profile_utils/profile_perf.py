@@ -103,7 +103,8 @@ async def run_profile(
     store_url: str,
     compute_url: str,
     username: str,
-    password: str
+    password: str,
+    iterations: int = 1
 ):
     # 1. Setup Session
     config = ServerConfig(
@@ -131,16 +132,18 @@ async def run_profile(
             
             prepared_images: List[Tuple[str, Path, int]] = []
             
-            for filename, expected_faces in TEST_IMAGES:
-                source = TEST_VECTORS_DIR / "images" / filename
-                if not source.exists():
-                    console.print(f"[red]Warning: Source image {source} not found, skipping.[/red]")
-                    continue
-                    
-                dest = temp_dir / f"unique_{uuid.uuid4().hex}_{filename}"
-                create_pixel_modified_copy(source, dest)
-                prepared_images.append((filename, dest, expected_faces))
-                console.print(f"  Prepared: {filename} -> {dest.name}")
+            for i in range(iterations):
+                console.print(f"  [dim]Preparing iteration {i+1}/{iterations}...[/dim]")
+                for filename, expected_faces in TEST_IMAGES:
+                    source = TEST_VECTORS_DIR / "images" / filename
+                    if not source.exists():
+                        console.print(f"[red]Warning: Source image {source} not found, skipping.[/red]")
+                        continue
+                        
+                    dest = temp_dir / f"unique_{uuid.uuid4().hex}_{filename}"
+                    create_pixel_modified_copy(source, dest)
+                    prepared_images.append((filename, dest, expected_faces))
+                    # console.print(f"  Prepared: {filename} -> {dest.name}") # Too noisy for 49 images
 
             if not prepared_images:
                 console.print("[red]No images found to test![/red]")
@@ -271,12 +274,13 @@ async def run_profile(
 @click.option("--compute-url", default="http://localhost:8012", help="Compute Service URL")
 @click.option("--username", default="admin", help="Username")
 @click.option("--password", default="admin", help="Password")
-def main(auth_url, store_url, compute_url, username, password):
+@click.option("--iterations", default=1, help="Number of times to iterate the image set (default 1)")
+def main(auth_url, store_url, compute_url, username, password, iterations):
     # Configure loguru to suppress DEBUG logs from libraries
     logger.remove()
     logger.add(sys.stderr, level="INFO")
     
-    asyncio.run(run_profile(auth_url, store_url, compute_url, username, password))
+    asyncio.run(run_profile(auth_url, store_url, compute_url, username, password, iterations))
 
 if __name__ == "__main__":
     main()
