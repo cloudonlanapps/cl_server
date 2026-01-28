@@ -16,6 +16,7 @@ class WorkerConfig(BaseModel):
     dir: Path
     id: str
     tasks: list[str]
+    poll_interval: float = 1.0
 
 
 class Config(BaseModel):
@@ -29,6 +30,7 @@ class Config(BaseModel):
     compute: ServiceConfig
     workers: list[WorkerConfig]
 
+    mqtt_broker: str = "localhost"
     mqtt_broker: str = "localhost"
     mqtt_port: int | None = None
 

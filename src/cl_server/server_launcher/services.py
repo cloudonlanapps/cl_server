@@ -35,6 +35,8 @@ def build_services(cfg: Config, env: dict[str, str]) -> Services:
                     str(cfg.compute.port),
                     "--tasks",
                     ",".join(worker_cfg.tasks),
+                    "--worker-poll-interval",
+                    str(worker_cfg.poll_interval),
                 ],
                 cwd=worker_cfg.dir,
                 env=env,

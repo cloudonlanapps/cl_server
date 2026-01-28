@@ -27,7 +27,8 @@
         "hls_streaming",
         "image_conversion",
         "media_thumbnail"
-      ]
+      ],
+      "poll_interval": 0.1
     }
   ],
   "mqtt_port": 1883,
