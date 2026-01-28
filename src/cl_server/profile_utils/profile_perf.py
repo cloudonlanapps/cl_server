@@ -27,6 +27,8 @@ from rich.table import Table
 
 from cl_client import StoreManager, SessionManager, ServerConfig
 from cl_client.store_models import StoreOperationResult
+from loguru import logger
+import sys
 
 # Initialize Rich console
 console = Console()
@@ -60,16 +62,31 @@ def create_pixel_modified_copy(source_path: Path, dest_path: Path) -> None:
             # Modify first pixel slightly (add 1 to first channel)
             # This changes the bitstream, ensuring standard hashing algorithms produce a new hash
             # without visually affecting the image.
+            # Generate a new random UUID
+            unique_id = uuid.uuid4().bytes
+
+            # Modify LAST 16 pixels (bottom-right) using the UUID bytes
+            # This is safer than top-left to avoid interfering with face detection
+            # (faces are rarely in the extreme bottom-right corner)
             if img.mode == 'RGB' or img.mode == 'RGBA':
-                r, g, b = img.getpixel((0, 0))[:3]
-                # Small modification (random to ensure uniqueness across runs)
-                new_r = (r + random.randint(1, 50)) % 256
-                # Put back
-                if img.mode == 'RGBA':
-                    a = img.getpixel((0, 0))[3]
-                    img.putpixel((0, 0), (new_r, g, b, a))
-                else:
-                    img.putpixel((0, 0), (new_r, g, b))
+                width, height = img.size
+                total_pixels = width * height
+                
+                # Start from the last pixel and go backwards
+                for i, byte in enumerate(unique_id):
+                    # Calculate index from end
+                    idx = total_pixels - 1 - i
+                    
+                    x = idx % width
+                    y = idx // width
+                    
+                    pixel = list(img.getpixel((x, y)))
+                    pixel[0] = byte # Set red channel to random byte from UUID
+                    
+                    if img.mode == 'RGBA':
+                        img.putpixel((x, y), tuple(pixel))
+                    else:
+                        img.putpixel((x, y), tuple(pixel[:3]))
             
             # Get original EXIF
             exif_data = img.getexif()
@@ -139,9 +156,13 @@ async def run_profile(
             upload_tasks = []
             
             # Helper for already completed tasks
+            # Helper for already completed tasks
             async def already_completed(id):
-                 from cl_client.mqtt_monitor import EntityStatusPayload
-                 return EntityStatusPayload(id=id, status="completed", timestamp=0)
+                 return EntityStatusPayload(
+                     entity_id=id,
+                     status="completed",
+                     timestamp=int(time.time() * 1000)
+                 )
 
             # Upload Phase
             for filename, path, _ in prepared_images:
@@ -172,7 +193,7 @@ async def run_profile(
                     if entity.intelligence_status == "completed":
                         console.print(f"  [green]Entity {entity.id} already completed (fast-tracked).[/green]")
                         # Log completion
-                        from loguru import logger
+                        # Log completion
                         logger.info(f"Image {entity.id} already completed")
                         monitor_tasks.append(already_completed(entity.id))
                     else:
@@ -185,7 +206,6 @@ async def run_profile(
                         # Wrap task to log completion
                         async def logged_wait(t, eid):
                             res = await t
-                            from loguru import logger
                             logger.info(f"Image {eid} processing completed")
                             return res
                             
@@ -243,8 +263,7 @@ async def run_profile(
         except:
             pass
 
-from loguru import logger
-import sys
+
 
 @click.command()
 @click.option("--auth-url", default="http://localhost:8010", help="Auth Service URL")
