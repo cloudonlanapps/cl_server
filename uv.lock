@@ -397,7 +397,9 @@ version = "0.1.0"
 source = { editable = "." }
 dependencies = [
     { name = "basedpyright" },
+    { name = "cl-client" },
     { name = "loguru" },
+    { name = "pillow" },
     { name = "pydantic" },
     { name = "requests" },
     { name = "ruff" },
@@ -406,7 +408,9 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "basedpyright", specifier = ">=1.37.0" },
+    { name = "cl-client", editable = "sdks/pysdk" },
     { name = "loguru", specifier = ">=0.7.3" },
+    { name = "pillow", specifier = ">=10.0.0" },
     { name = "pydantic", specifier = ">=2.12.5" },
     { name = "requests", specifier = ">=2.31.0" },
     { name = "ruff", specifier = ">=0.14.10" },
