@@ -10,6 +10,8 @@ dependencies = [
     "pydantic>=2.12.5",
     "requests>=2.31.0",
     "ruff>=0.14.10",
+    "pillow>=10.0.0",
+    "cl-client",
 ]
 
 [tool.uv]
@@ -31,6 +33,7 @@ store = "store.main:main"
 cl-client = "cl_client_cli.main:cli"
 cl-client-sdk = "cl_client.cli:main"
 server-launcher = "cl_server.server_launcher:main"
+profile-perf = "cl_server.profile_utils.profile_perf:main"
 
 [tool.uv.workspace]
 members = [

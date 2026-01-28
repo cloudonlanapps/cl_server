@@ -31,7 +31,6 @@ class Config(BaseModel):
     workers: list[WorkerConfig]
 
     mqtt_broker: str = "localhost"
-    mqtt_broker: str = "localhost"
     mqtt_port: int | None = None
 
     # model_config = {"arbitrary_types_allowed": True}
