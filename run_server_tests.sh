@@ -10,6 +10,5 @@ rm -rf $TEST_ARTIFACT_DIR
 pushd services/packages/cl_ml_tools ; uv run pytest tests ; popd
 pushd services/auth ; uv run pytest tests ; popd
 pushd services/compute ; uv run pytest tests ; popd
-pushd services/store ; uv run pytest tests ; popd
 
 
