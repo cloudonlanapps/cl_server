@@ -132,6 +132,36 @@ def start_qdrant_vectorstore(env: dict[str, str]) -> bool:
 shutdown_event = threading.Event()
 
 
+def get_local_ip() -> str:
+    """Get the local IP address of the machine."""
+    try:
+        # Create a socket connection to determine the local IP
+        # This doesn't actually connect, just determines which interface would be used
+        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
+            s.connect(("8.8.8.8", 80))
+            return s.getsockname()[0]
+    except Exception:
+        # Fallback to localhost if we can't determine the IP
+        return "127.0.0.1"
+
+
+def print_env_export(cfg) -> None:
+    """Print environment variables in .bashrc format."""
+    mqtt_port = cfg.mqtt_port if cfg.mqtt_port else 1883
+    local_ip = get_local_ip()
+
+    print("\n" + "=" * 50)
+    print("########## BEGIN ##########")
+    print("# CLServer Env")
+    print(f"export CL_AUTH_URL=http://{local_ip}:{cfg.auth.port}")
+    print(f"export CL_COMPUTE_URL=http://{local_ip}:{cfg.compute.port}")
+    print(f"export CL_STORE_URL=http://{local_ip}:{cfg.store.port}")
+    print(f"export CL_MQTT_URL=mqtt://{local_ip}:{mqtt_port}")
+    print(f"export CL_QDRANT_URL=http://{local_ip}:6333")
+    print("########## END ##########")
+    print("=" * 50 + "\n")
+
+
 def _handle_signal(signum: int, frame: FrameType | None) -> None:
     """Handle shutdown signals safely without reentrant I/O."""
     # Use os.write for async-signal-safe I/O instead of print or logging
@@ -261,6 +291,9 @@ def main():
         _ = signal.signal(signal.SIGINT, _handle_signal)  # Ctrl+C
         _ = signal.signal(signal.SIGQUIT, _handle_signal)  # Ctrl+\
         _ = signal.signal(signal.SIGTERM, _handle_signal)
+
+        # Print environment variables for easy export
+        print_env_export(cfg)
 
         logger.success("Press Ctrl+C / Ctrl+\\ to stop.")
         _ = shutdown_event.wait()
