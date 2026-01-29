@@ -1,9 +1,12 @@
 import os
 import signal
+import socket
+import subprocess
 import sys
 import threading
 import time
 from argparse import ArgumentParser, Namespace
+from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 import requests
@@ -31,6 +34,99 @@ def wait_for_server(url: str, timeout: int = 30):
             pass
         time.sleep(1)
     raise RuntimeError(f"Server did not become ready: {url}")
+
+
+def check_port_open(host: str, port: int, timeout: float = 1.0) -> bool:
+    """Check if a port is open on the given host."""
+    try:
+        with socket.create_connection((host, port), timeout=timeout):
+            return True
+    except (socket.timeout, socket.error, ConnectionRefusedError):
+        return False
+
+
+def check_mqtt_running() -> bool:
+    """Check if MQTT broker is running on localhost:1883."""
+    return check_port_open("localhost", 1883)
+
+
+def check_qdrant_running() -> bool:
+    """Check if Qdrant vector store is running on localhost:6333."""
+    try:
+        response = requests.get("http://localhost:6333/health", timeout=1)
+        return response.ok
+    except requests.RequestException:
+        return False
+
+
+def start_mqtt_broker(env: dict[str, str]) -> bool:
+    """Start MQTT broker using the docker start script."""
+    logger.info("MQTT broker not running, attempting to start...")
+
+    # Find the mqtt_broker_start script
+    script_path = Path(__file__).parent.parent.parent.parent / "dockers" / "mosquitto_mqtt" / "bin" / "mqtt_broker_start"
+
+    if not script_path.exists():
+        logger.error(f"MQTT start script not found at: {script_path}")
+        return False
+
+    try:
+        # Run the start script with the environment
+        result = subprocess.run(
+            [str(script_path)],
+            env=env,
+            capture_output=True,
+            text=True,
+            timeout=120,
+        )
+
+        if result.returncode == 0:
+            logger.success("MQTT broker started successfully")
+            return True
+        else:
+            logger.error(f"Failed to start MQTT broker: {result.stderr}")
+            return False
+    except subprocess.TimeoutExpired:
+        logger.error("MQTT broker start script timed out")
+        return False
+    except Exception as e:
+        logger.error(f"Error starting MQTT broker: {e}")
+        return False
+
+
+def start_qdrant_vectorstore(env: dict[str, str]) -> bool:
+    """Start Qdrant vector store using the docker start script."""
+    logger.info("Qdrant vector store not running, attempting to start...")
+
+    # Find the vector_store_start script
+    script_path = Path(__file__).parent.parent.parent.parent / "dockers" / "qdrant_vector_store" / "bin" / "vector_store_start"
+
+    if not script_path.exists():
+        logger.error(f"Qdrant start script not found at: {script_path}")
+        return False
+
+    try:
+        # Run the start script with the environment
+        result = subprocess.run(
+            [str(script_path)],
+            env=env,
+            capture_output=True,
+            text=True,
+            timeout=120,
+        )
+
+        if result.returncode == 0:
+            logger.success("Qdrant vector store started successfully")
+            return True
+        else:
+            logger.error(f"Failed to start Qdrant vector store: {result.stderr}")
+            return False
+    except subprocess.TimeoutExpired:
+        logger.error("Qdrant start script timed out")
+        return False
+    except Exception as e:
+        logger.error(f"Error starting Qdrant vector store: {e}")
+        return False
 
 
 shutdown_event = threading.Event()
@@ -80,6 +176,24 @@ def main():
     env = os.environ | {
         "CL_SERVER_DIR": str(cfg.data_dir),
     }
+
+    # Check and start MQTT broker if needed
+    logger.info("Checking MQTT broker status...")
+    if not check_mqtt_running():
+        logger.warning("MQTT broker is not running")
+        if not start_mqtt_broker(env):
+            sys.exit("[ERROR] Failed to start MQTT broker. Please check the logs and try starting it manually.")
+    else:
+        logger.success("MQTT broker is already running")
+
+    # Check and start Qdrant vector store if needed
+    logger.info("Checking Qdrant vector store status...")
+    if not check_qdrant_running():
+        logger.warning("Qdrant vector store is not running")
+        if not start_qdrant_vectorstore(env):
+            sys.exit("[ERROR] Failed to start Qdrant vector store. Please check the logs and try starting it manually.")
+    else:
+        logger.success("Qdrant vector store is already running")
 
     services = build_services(cfg, env)
     processes = Processes()
