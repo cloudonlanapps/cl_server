@@ -45,6 +45,94 @@ def check_port_open(host: str, port: int, timeout: float = 1.0) -> bool:
         return False
 
 
+def get_process_using_port(port: int) -> list[dict[str, str]]:
+    """Get information about processes using the specified port.
+
+    Returns a list of dicts with keys: 'pid', 'command', 'user'
+    """
+    try:
+        # Use lsof to find processes using the port
+        result = subprocess.run(
+            ["lsof", "-ti", f":{port}"],
+            capture_output=True,
+            text=True,
+            timeout=5,
+        )
+        if result.returncode == 0 and result.stdout.strip():
+            pids = result.stdout.strip().split("\n")
+            processes = []
+            for pid in pids:
+                # Get process details
+                try:
+                    ps_result = subprocess.run(
+                        ["ps", "-p", pid, "-o", "pid=,user=,comm="],
+                        capture_output=True,
+                        text=True,
+                        timeout=2,
+                    )
+                    if ps_result.returncode == 0:
+                        parts = ps_result.stdout.strip().split(None, 2)
+                        if len(parts) >= 3:
+                            processes.append({
+                                "pid": parts[0],
+                                "user": parts[1],
+                                "command": parts[2],
+                            })
+                except Exception:
+                    pass
+            return processes
+        return []
+    except Exception:
+        return []
+
+
+def kill_processes_on_port(port: int) -> bool:
+    """Kill all processes using the specified port.
+
+    Returns True if successful, False otherwise.
+    """
+    processes = get_process_using_port(port)
+    if not processes:
+        return True
+
+    logger.info(f"Found {len(processes)} process(es) using port {port}")
+    for proc in processes:
+        logger.info(f"  PID {proc['pid']}: {proc['command']} (user: {proc['user']})")
+
+    try:
+        for proc in processes:
+            pid = int(proc["pid"])
+            logger.info(f"Killing process {pid}...")
+            os.kill(pid, signal.SIGTERM)
+
+        # Wait a bit for graceful shutdown
+        time.sleep(2)
+
+        # Check if any processes are still alive and force kill them
+        remaining = get_process_using_port(port)
+        if remaining:
+            logger.warning(f"Some processes still alive on port {port}, force killing...")
+            for proc in remaining:
+                try:
+                    pid = int(proc["pid"])
+                    os.kill(pid, signal.SIGKILL)
+                except Exception as e:
+                    logger.error(f"Failed to kill PID {pid}: {e}")
+            time.sleep(1)
+
+        # Final check
+        if not get_process_using_port(port):
+            logger.success(f"Successfully freed port {port}")
+            return True
+        else:
+            logger.error(f"Failed to free port {port}")
+            return False
+
+    except Exception as e:
+        logger.error(f"Error killing processes on port {port}: {e}")
+        return False
+
+
 def check_mqtt_running() -> bool:
     """Check if MQTT broker is running on localhost:1883."""
     return check_port_open("localhost", 1883)
@@ -53,10 +141,11 @@ def check_mqtt_running() -> bool:
 def check_qdrant_running() -> bool:
     """Check if Qdrant vector store is running on localhost:6333."""
     try:
-        response = requests.get("http://localhost:6333/health", timeout=1)
+        response = requests.get("http://localhost:6333/health", timeout=2)
         return response.ok
     except requests.RequestException:
-        return False
+        # Fallback to port check if health endpoint fails
+        return check_port_open("localhost", 6333, timeout=1.0)
 
 
 def start_mqtt_broker(env: dict[str, str]) -> bool:
@@ -162,6 +251,53 @@ def print_env_export(cfg) -> None:
     print("=" * 50 + "\n")
 
 
+def check_and_free_port(port: int, service_name: str, force: bool) -> bool:
+    """Check if port is available and optionally free it.
+
+    Args:
+        port: Port number to check
+        service_name: Name of the service for logging
+        force: If True, kill processes using the port. If False, exit with error.
+
+    Returns:
+        True if port is available, False otherwise
+    """
+    if not check_port_open("localhost", port):
+        # Port is free
+        return True
+
+    # Port is in use
+    processes = get_process_using_port(port)
+    if not processes:
+        logger.warning(f"Port {port} appears to be in use but cannot identify processes")
+        if force:
+            logger.info("--force specified, attempting to start anyway...")
+            return True
+        else:
+            logger.error(f"Port {port} required by {service_name} is already in use")
+            logger.error("Use --force to kill existing processes, or manually stop them")
+            return False
+
+    logger.warning(f"Port {port} required by {service_name} is already in use:")
+    for proc in processes:
+        logger.warning(f"  PID {proc['pid']}: {proc['command']} (user: {proc['user']})")
+
+    if force:
+        logger.info(f"--force specified, killing processes on port {port}...")
+        if kill_processes_on_port(port):
+            return True
+        else:
+            logger.error(f"Failed to free port {port} for {service_name}")
+            return False
+    else:
+        logger.error(f"Cannot start {service_name} because port {port} is in use")
+        logger.error("Options:")
+        logger.error("  1. Use --force flag to automatically kill existing processes")
+        logger.error(f"  2. Manually kill the process: kill {processes[0]['pid']}")
+        logger.error("  3. Stop the existing service before starting a new one")
+        return False
+
+
 def _handle_signal(signum: int, frame: FrameType | None) -> None:
     """Handle shutdown signals safely without reentrant I/O."""
     # Use os.write for async-signal-safe I/O instead of print or logging
@@ -178,10 +314,12 @@ def _handle_signal(signum: int, frame: FrameType | None) -> None:
 class Args(Namespace):
     config: str
     services: str
+    force: bool
 
-    def __init__(self, config: str = "", services: str = "all"):
+    def __init__(self, config: str = "", services: str = "all", force: bool = False):
         self.config = config
         self.services = services
+        self.force = force
         super().__init__()
 
 
@@ -192,6 +330,11 @@ def main():
         "--services",
         default="all",
         help="Comma-separated list of services to start: auth,compute,store,m_insight,workers or 'all'",
+    )
+    _ = parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Force kill any existing processes on the required ports before starting",
     )
     args = parser.parse_args(namespace=Args())
 
@@ -245,6 +388,8 @@ def main():
 
         # Start auth (required by all other services)
         if should_start("auth"):
+            if not check_and_free_port(cfg.auth.port, "auth", args.force):
+                sys.exit(f"[ERROR] Cannot start auth service - port {cfg.auth.port} is in use")
             logger.info(f"Starting auth server @ port {cfg.auth.port}...")
             processes.auth = start_process(services.auth)
             wait_for_server(cfg.auth_url)
@@ -252,6 +397,8 @@ def main():
 
         # Start compute (required by store and workers)
         if should_start("compute"):
+            if not check_and_free_port(cfg.compute.port, "compute", args.force):
+                sys.exit(f"[ERROR] Cannot start compute service - port {cfg.compute.port} is in use")
             logger.info(f"Starting compute server @ port {cfg.compute.port}...")
             processes.compute = start_process(services.compute)
 
@@ -262,6 +409,8 @@ def main():
 
         # Start store (requires auth and compute)
         if should_start("store"):
+            if not check_and_free_port(cfg.store.port, "store", args.force):
+                sys.exit(f"[ERROR] Cannot start store service - port {cfg.store.port} is in use")
             logger.info(f"Starting store server @ port {cfg.store.port}...")
             processes.store = start_process(services.store)
 
