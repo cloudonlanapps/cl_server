@@ -84,3 +84,15 @@ Currently Available Demo Applications
 | `cl_server_cli_python` | CLI  | Python  | Development in progress                         |
 | `cl_server_cli_dart`   | CLI  | Dart    | Development in progress                         |
 | `cl_server_ui_flutter` | UI   | Flutter | UI app demonstrating various cl_server features |
+
+
+# Tags:
+
+ tag when the tests are fully passing in all the packages, services and the sdks
+    Don't use similar tag for local tags, this tag must be applied to all the repos in the cl_server repo
+ ```
+    git tag BASELINED_0.1.0;
+    git submodule foreach --recursive "git tag BASELINED_0.1.0";
+    git push origin BASELINED_0.1.0;
+    git submodule foreach --recursive "git push origin BASELINED_0.1.0";
+ ```
