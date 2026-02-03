@@ -236,7 +236,6 @@ def get_local_ip() -> str:
 
 def print_env_export(cfg) -> None:
     """Print environment variables in .bashrc format."""
-    mqtt_port = cfg.mqtt_port if cfg.mqtt_port else 1883
     local_ip = get_local_ip()
 
     print("\n" + "=" * 50)
@@ -245,7 +244,7 @@ def print_env_export(cfg) -> None:
     print(f"export CL_AUTH_URL=http://{local_ip}:{cfg.auth.port}")
     print(f"export CL_COMPUTE_URL=http://{local_ip}:{cfg.compute.port}")
     print(f"export CL_STORE_URL=http://{local_ip}:{cfg.store.port}")
-    print(f"export CL_MQTT_URL=mqtt://{local_ip}:{mqtt_port}")
+    print(f"export CL_MQTT_URL={cfg.mqtt_url}")
     print(f"export CL_QDRANT_URL=http://{local_ip}:6333")
     print("########## END ##########")
     print("=" * 50 + "\n")
