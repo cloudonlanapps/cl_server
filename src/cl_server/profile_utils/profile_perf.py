@@ -25,7 +25,7 @@ from PIL import Image
 from rich.console import Console
 from rich.table import Table
 
-from cl_client import StoreManager, SessionManager, ServerConfig
+from cl_client import StoreManager, SessionManager, ServerPref
 from cl_client.store_models import StoreOperationResult
 from loguru import logger
 import sys
@@ -35,7 +35,7 @@ console = Console()
 
 # Default test images location
 TEST_VECTORS_DIR = Path(
-    os.getenv("TEST_VECTORS_DIR", "/Users/anandasarangaram/Work/cl_server_test_media")
+    os.getenv("TEST_VECTORS_DIR", str(Path.home() / "cl_server_test_media"))
 )
 
 # Test images with expected face counts (same as integration test)
@@ -107,7 +107,7 @@ async def run_profile(
     iterations: int = 1
 ):
     # 1. Setup Session
-    config = ServerConfig(
+    config = ServerPref(
         auth_url=auth_url,
         store_url=store_url,
         compute_url=compute_url,
