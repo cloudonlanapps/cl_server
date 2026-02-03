@@ -22,6 +22,8 @@ class Services(BaseModel):
 
 def build_services(cfg: Config, env: dict[str, str]) -> Services:
     workers: list[ServiceArgs] = []
+    mqtt_url = f"mqtt://{cfg.mqtt_broker}:{cfg.mqtt_port or 1883}"
+
     for i, worker_cfg in enumerate(cfg.workers):
         workers.append(
             ServiceArgs(
@@ -31,8 +33,10 @@ def build_services(cfg: Config, env: dict[str, str]) -> Services:
                     "compute-worker",
                     "--worker-id",
                     worker_cfg.id,
-                    "--port",
-                    str(cfg.compute.port),
+                    "--compute-url",
+                    f"http://localhost:{cfg.compute.port}",
+                    "--mqtt-url",
+                    mqtt_url,
                     "--tasks",
                     ",".join(worker_cfg.tasks),
                     "--worker-poll-interval",
@@ -88,6 +92,8 @@ def build_services(cfg: Config, env: dict[str, str]) -> Services:
                 "compute-server",
                 "--port",
                 str(cfg.compute.port),
+                "--mqtt-url",
+                mqtt_url,
             ],
             cwd=cfg.compute.dir,
             env=env,
