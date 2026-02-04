@@ -48,4 +48,12 @@ members = [
 
 [tool.uv.sources]
 cl-ml-tools = { workspace = true }
-cl-client = { workspace = true } 
+cl-client = { workspace = true }
+
+[tool.pytest.ini_options]
+markers = [
+    "integration: marks tests as integration tests",
+    "intelligence: marks tests related to intelligence features",
+    "admin_only: marks tests as requiring admin permissions",
+]
+asyncio_mode = "strict"
