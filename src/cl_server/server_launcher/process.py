@@ -180,3 +180,67 @@ def stop_all_processes(processes: Processes, config: Config | None = None):
         _ = stop_process(processes.auth, "auth", health_url=health_url)
 
     logger.success("All services stopped.")
+
+
+def kill_processes_by_pattern(pattern: str) -> bool:
+    """Kill processes matching a pattern (like pgrep -f).
+    
+    Args:
+        pattern: Regex pattern to match against full command line
+        
+    Returns:
+        True if successful (even if no processes found), False on error
+    """
+    try:
+        # Check for processes first
+        # pgrep -f matches against full argument list
+        logger.info(f"Checking for processes matching pattern: '{pattern}'")
+        result = subprocess.run(
+            ["pgrep", "-f", pattern],
+            capture_output=True,
+            text=True
+        )
+        
+        if result.returncode != 0:
+            # No processes found (pgrep returns 1 if no matches)
+            # This is not an error for us
+            return True
+            
+        pids = result.stdout.strip().split()
+        if not pids:
+            return True
+            
+        logger.warning(f"Found {len(pids)} orphan process(es) matching '{pattern}'")
+        
+        # Kill them
+        subprocess.run(
+            ["pkill", "-f", pattern],
+            capture_output=True,
+            check=False 
+        )
+        
+        # Wait a moment
+        time.sleep(1)
+        
+        # Check if they are gone
+        result = subprocess.run(
+            ["pgrep", "-f", pattern],
+            capture_output=True,
+            text=True
+        )
+        
+        if result.returncode == 0 and result.stdout.strip():
+            logger.warning(f"Some processes matching '{pattern}' are still running, force killing...")
+            subprocess.run(
+                ["pkill", "-9", "-f", pattern],
+                capture_output=True,
+                check=False
+            )
+            time.sleep(0.5)
+            
+        logger.success(f"Cleaned up processes matching '{pattern}'")
+        return True
+        
+    except Exception as e:
+        logger.error(f"Error killing processes by pattern '{pattern}': {e}")
+        return False

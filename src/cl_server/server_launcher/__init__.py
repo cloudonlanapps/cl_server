@@ -14,7 +14,7 @@ from loguru import logger
 
 from .config import load_config
 from .migrate import migrate_auth, migrate_compute, migrate_store
-from .process import Processes, start_process, stop_all_processes
+from .process import Processes, kill_processes_by_pattern, start_process, stop_all_processes
 from .services import build_services
 
 if TYPE_CHECKING:
@@ -398,6 +398,15 @@ def main():
         if should_start("compute"):
             if not check_and_free_port(cfg.compute.port, "compute", args.force):
                 sys.exit(f"[ERROR] Cannot start compute service - port {cfg.compute.port} is in use")
+            
+            # Additional cleanup for zombie workers if force is enabled
+            # Workers don't listen on ports, so check_and_free_port won't find them
+            # We look for processes running compute-worker commanding targeting this Compute port
+            if args.force:
+                 # Match "compute-worker" AND "--port <PORT>" to avoid killing other project workers
+                 pattern = f"compute-worker.*--port {cfg.compute.port}"
+                 kill_processes_by_pattern(pattern)
+
             logger.info(f"Starting compute server @ port {cfg.compute.port}...")
             processes.compute = start_process(services.compute)
 
