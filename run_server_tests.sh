@@ -25,7 +25,7 @@ done
 # Clean up any previous test artifacts
 rm -rf $TEST_ARTIFACT_DIR
 
-uv run pytest services/store/tests --auth-url=http://${SERVER_IP}:8010 --compute-url=http://${SERVER_IP}:8012 --username=admin --password=admin --mqtt-url=mqtt://${SERVER_IP}:1883 "${EXTRA_ARGS[@]}"
+uv run pytest services/store/tests --auth-url=http://${SERVER_IP}:8010 --compute-url=http://${SERVER_IP}:8012                                      --username=admin --password=admin --mqtt-url=mqtt://${SERVER_IP}:1883  --qdrant-url=http://192.168.0.105:6333 "${EXTRA_ARGS[@]}"
 uv run pytest sdks/pysdk/tests/ --auth-url=http://${SERVER_IP}:8010 --compute-url=http://${SERVER_IP}:8012 --store-url=http://${SERVER_IP}:8011 --username=admin --password=admin  --mqtt-url=mqtt://${SERVER_IP}:1883 "${EXTRA_ARGS[@]}"
 uv run pytest services/compute/tests "${EXTRA_ARGS[@]}"
 uv run pytest services/auth/tests "${EXTRA_ARGS[@]}"
