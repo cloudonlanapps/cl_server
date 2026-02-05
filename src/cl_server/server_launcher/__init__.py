@@ -113,11 +113,12 @@ def kill_processes_on_port(port: int) -> bool:
         if remaining:
             logger.warning(f"Some processes still alive on port {port}, force killing...")
             for proc in remaining:
+                pid = None
                 try:
                     pid = int(proc["pid"])
                     os.kill(pid, signal.SIGKILL)
                 except Exception as e:
-                    logger.error(f"Failed to kill PID {pid}: {e}")
+                    logger.error(f"Failed to kill PID {pid or proc.get('pid', 'unknown')}: {e}")
             time.sleep(1)
 
         # Final check
@@ -134,18 +135,22 @@ def kill_processes_on_port(port: int) -> bool:
 
 
 def check_mqtt_running() -> bool:
-    """Check if MQTT broker is running on localhost:1883."""
-    return check_port_open("localhost", 1883)
+    """Check if MQTT broker is running on 127.0.0.1:1883."""
+    return check_port_open("127.0.0.1", 1883)
 
 
 def check_qdrant_running() -> bool:
-    """Check if Qdrant vector store is running on localhost:6333."""
+    """Check if Qdrant vector store is running on 127.0.0.1:6333."""
     try:
-        response = requests.get("http://localhost:6333/health", timeout=2)
-        return response.ok
-    except requests.RequestException:
+        response = requests.get("http://127.0.0.1:6333/health", timeout=2)
+        if response.ok:
+            return True
+        logger.debug(f"Qdrant health check returned status: {response.status_code}")
+        return False
+    except requests.RequestException as e:
+        logger.debug(f"Qdrant health check failed: {e}. Falling back to port check.")
         # Fallback to port check if health endpoint fails
-        return check_port_open("localhost", 6333, timeout=1.0)
+        return check_port_open("127.0.0.1", 6333, timeout=1.0)
 
 
 def start_mqtt_broker(env: dict[str, str]) -> bool:
@@ -153,7 +158,9 @@ def start_mqtt_broker(env: dict[str, str]) -> bool:
     logger.info("MQTT broker not running, attempting to start...")
 
     # Find the mqtt_broker_start script
-    script_path = Path(__file__).parent.parent.parent.parent / "dockers" / "mosquitto_mqtt" / "bin" / "mqtt_broker_start"
+    root_dir = Path(__file__).parent.parent.parent.parent
+    docker_dir = root_dir / "dockers" / "mosquitto_mqtt"
+    script_path = docker_dir / "bin" / "mqtt_broker_start"
 
     if not script_path.exists():
         logger.error(f"MQTT start script not found at: {script_path}")
@@ -173,10 +180,16 @@ def start_mqtt_broker(env: dict[str, str]) -> bool:
             logger.success("MQTT broker started successfully")
             return True
         else:
-            logger.error(f"Failed to start MQTT broker: {result.stderr}")
+            logger.error(f"Failed to start MQTT broker (exit code {result.returncode})")
+            if result.stdout:
+                logger.error(f"STDOUT: {result.stdout}")
+            if result.stderr:
+                logger.error(f"STDERR: {result.stderr}")
+            logger.info(f"To view logs: cd {docker_dir} && docker-compose logs")
             return False
     except subprocess.TimeoutExpired:
         logger.error("MQTT broker start script timed out")
+        logger.info(f"To view logs: cd {docker_dir} && docker-compose logs")
         return False
     except Exception as e:
         logger.error(f"Error starting MQTT broker: {e}")
@@ -188,7 +201,9 @@ def start_qdrant_vectorstore(env: dict[str, str]) -> bool:
     logger.info("Qdrant vector store not running, attempting to start...")
 
     # Find the vector_store_start script
-    script_path = Path(__file__).parent.parent.parent.parent / "dockers" / "qdrant_vector_store" / "bin" / "vector_store_start"
+    root_dir = Path(__file__).parent.parent.parent.parent
+    docker_dir = root_dir / "dockers" / "qdrant_vector_store"
+    script_path = docker_dir / "bin" / "vector_store_start"
 
     if not script_path.exists():
         logger.error(f"Qdrant start script not found at: {script_path}")
@@ -208,10 +223,16 @@ def start_qdrant_vectorstore(env: dict[str, str]) -> bool:
             logger.success("Qdrant vector store started successfully")
             return True
         else:
-            logger.error(f"Failed to start Qdrant vector store: {result.stderr}")
+            logger.error(f"Failed to start Qdrant vector store (exit code {result.returncode})")
+            if result.stdout:
+                logger.error(f"STDOUT: {result.stdout}")
+            if result.stderr:
+                logger.error(f"STDERR: {result.stderr}")
+            logger.info(f"To view logs: cd {docker_dir} && docker-compose logs qdrant")
             return False
     except subprocess.TimeoutExpired:
         logger.error("Qdrant start script timed out")
+        logger.info(f"To view logs: cd {docker_dir} && docker-compose logs qdrant")
         return False
     except Exception as e:
         logger.error(f"Error starting Qdrant vector store: {e}")
@@ -261,7 +282,7 @@ def check_and_free_port(port: int, service_name: str, force: bool) -> bool:
     Returns:
         True if port is available, False otherwise
     """
-    if not check_port_open("localhost", port):
+    if not check_port_open("127.0.0.1", port):
         # Port is free
         return True
 
