@@ -12,6 +12,8 @@ dependencies = [
     "ruff>=0.14.10",
     "pillow>=10.0.0",
     "cl-client",
+    "rich>=13.7.0",
+    "questionary>=2.0.1",
 ]
 
 [tool.uv]
@@ -34,6 +36,8 @@ cl-client = "cl_client_cli.main:cli"
 cl-client-sdk = "cl_client.cli:main"
 server-launcher = "cl_server.server_launcher:main"
 profile-perf = "cl_server.profile_utils.profile_perf:main"
+test-run = "cl_server.test_run_repl:main"
+test_run = "cl_server.test_run_repl:main"
 
 [tool.uv.workspace]
 members = [
