@@ -3,7 +3,6 @@
   "include": [
     "services/packages/cl_ml_tools/src",
     "services/auth/src",
-    "services/shared/src",
     "services/store/src",
     "services/compute/src",
     "sdks/pysdk/src",
@@ -29,12 +28,6 @@
       "root": "services/auth",
       "extraPaths": [
         "services/auth/src"
-      ]
-    },
-    {
-      "root": "services/shared",
-      "extraPaths": [
-        "services/shared/src"
       ]
     },
     {
