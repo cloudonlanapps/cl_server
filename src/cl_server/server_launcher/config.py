@@ -19,6 +19,16 @@ class WorkerConfig(BaseModel):
     poll_interval: float = 1.0
 
 
+class BroadcasterConfig(BaseModel):
+    """Broadcaster service configuration."""
+    
+    interval: float = 5.0
+    service_name: str = "server100@cloudonlapapps"
+    service_type: str = "_http._tcp"
+    txt_record: str = "desc=CL Image Repo Service"
+
+
+
 class Config(BaseModel):
     """Server launcher configuration loaded from JSON."""
 
@@ -29,6 +39,7 @@ class Config(BaseModel):
     store: ServiceConfig
     compute: ServiceConfig
     workers: list[WorkerConfig]
+    broadcaster: BroadcasterConfig = BroadcasterConfig()
 
     mqtt_url: str = "mqtt://localhost:1883"
 

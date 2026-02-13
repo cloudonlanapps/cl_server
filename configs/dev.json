@@ -45,5 +45,11 @@
       ]
     }
   ],
+  "broadcaster": {
+    "interval": 5.0,
+    "service_name": "mac2@cloudonlanapps",
+    "service_type": "_http._tcp",
+    "txt_record": "desc=CL Server Single Worker on MAC"
+  },
   "mqtt_url": "mqtt://localhost:1883"
 }

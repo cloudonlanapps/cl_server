@@ -16,6 +16,7 @@ from .config import load_config
 from .migrate import migrate_auth, migrate_compute, migrate_store
 from .process import Processes, kill_processes_by_pattern, start_process, stop_all_processes
 from .services import build_services
+from .broadcaster import HealthBroadcaster
 
 if TYPE_CHECKING:
     from types import FrameType
@@ -239,6 +240,74 @@ def start_qdrant_vectorstore(env: dict[str, str]) -> bool:
         return False
 
 
+def stop_mqtt_broker(env: dict[str, str]) -> bool:
+    """Stop MQTT broker using the docker stop script."""
+    logger.info("Stopping MQTT broker...")
+
+    # Find the mqtt_broker_stop script
+    root_dir = Path(__file__).parent.parent.parent.parent
+    docker_dir = root_dir / "dockers" / "mosquitto_mqtt"
+    script_path = docker_dir / "bin" / "mqtt_broker_stop"
+
+    if not script_path.exists():
+        logger.error(f"MQTT stop script not found at: {script_path}")
+        return False
+
+    try:
+        # Run the stop script
+        result = subprocess.run(
+            [str(script_path)],
+            env=env,
+            capture_output=True,
+            text=True,
+            timeout=60,
+        )
+
+        if result.returncode == 0:
+            logger.success("MQTT broker stopped successfully")
+            return True
+        else:
+            logger.error(f"Failed to stop MQTT broker (exit code {result.returncode})")
+            return False
+    except Exception as e:
+        logger.error(f"Error stopping MQTT broker: {e}")
+        return False
+
+
+def stop_qdrant_vectorstore(env: dict[str, str]) -> bool:
+    """Stop Qdrant vector store using the docker stop script."""
+    logger.info("Stopping Qdrant vector store...")
+
+    # Find the vector_store_stop script
+    root_dir = Path(__file__).parent.parent.parent.parent
+    docker_dir = root_dir / "dockers" / "qdrant_vector_store"
+    script_path = docker_dir / "bin" / "vector_store_stop"
+
+    if not script_path.exists():
+        logger.error(f"Qdrant stop script not found at: {script_path}")
+        return False
+
+    try:
+        # Run the stop script
+        result = subprocess.run(
+            [str(script_path)],
+            env=env,
+            capture_output=True,
+            text=True,
+            timeout=60,
+        )
+
+        if result.returncode == 0:
+            logger.success("Qdrant vector store stopped successfully")
+            return True
+        else:
+            logger.error(f"Failed to stop Qdrant vector store (exit code {result.returncode})")
+            return False
+    except Exception as e:
+        logger.error(f"Error stopping Qdrant vector store: {e}")
+        return False
+
+
 shutdown_event = threading.Event()
 
 
@@ -390,6 +459,7 @@ def main():
 
     services = build_services(cfg, env)
     processes = Processes()
+    broadcaster = None
 
     requested_services = set(args.services.split(",")) if args.services != "all" else {"all"}
 
@@ -470,11 +540,52 @@ def main():
         _ = signal.signal(signal.SIGQUIT, _handle_signal)  # Ctrl+\
         _ = signal.signal(signal.SIGTERM, _handle_signal)
 
+        _ = signal.signal(signal.SIGTERM, _handle_signal)
+
         # Print environment variables for easy export
         print_env_export(cfg)
+
+        # Start Health Broadcaster
+        # Wait a bit effectively to ensure services are up and settled
+        logger.info(f"Waiting 5 seconds before starting health broadcaster...")
+        time.sleep(5)
+        
+        try:
+             # Based on ComputeWorkerConfig default, but good to be explicit/configurable if possible
+             # For now hardcoding or using what we found in analysis
+             capability_topic_prefix = "inference/workers" 
+             
+             # Extract expected worker IDs
+             expected_worker_ids = [w.id for w in cfg.workers]
+             
+             broadcaster = HealthBroadcaster(
+                 auth_url=cfg.auth_url,
+                 store_url=cfg.store_url,
+                 compute_url=cfg.compute_url,
+                 mqtt_url=cfg.mqtt_url,
+                 store_port=cfg.store.port,
+                 capability_topic_prefix=capability_topic_prefix,
+                 host_port=cfg.store.port, # Using Store port for DNS-SD registration
+                 expected_worker_ids=expected_worker_ids,
+                 interval=cfg.broadcaster.interval,
+                 service_name=cfg.broadcaster.service_name,
+                 service_type=cfg.broadcaster.service_type,
+                 txt_record=cfg.broadcaster.txt_record,
+             )
+             broadcaster.start()
+        except Exception as e:
+             logger.error(f"Failed to start Health Broadcaster: {e}")
 
         logger.success("Press Ctrl+C / Ctrl+\\ to stop.")
         _ = shutdown_event.wait()
 
     finally:
+        if broadcaster:
+            logger.info("Stopping Health Broadcaster...")
+            broadcaster.stop()
+            
         stop_all_processes(processes, cfg)
+        
+        # Stop dockers
+        stop_mqtt_broker(env)
+        stop_qdrant_vectorstore(env)

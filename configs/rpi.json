@@ -33,9 +33,9 @@
   ],
   "broadcaster": {
     "interval": 5.0,
-    "service_name": "mac@cloudonlanapps",
+    "service_name": "rpi@cloudonlanapps",
     "service_type": "_http._tcp",
-    "txt_record": "desc=CL Server Single Worker on MAC"
+    "txt_record": "desc=CL Server Single Worker on RPI"
   },
   "mqtt_url": "mqtt://localhost:1883"
 }

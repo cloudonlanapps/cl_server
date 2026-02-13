@@ -400,6 +400,7 @@ source = { editable = "." }
 dependencies = [
     { name = "basedpyright" },
     { name = "cl-client" },
+    { name = "cl-ml-tools" },
     { name = "loguru" },
     { name = "pillow" },
     { name = "pydantic" },
@@ -413,6 +414,7 @@ dependencies = [
 requires-dist = [
     { name = "basedpyright", specifier = ">=1.37.0" },
     { name = "cl-client", editable = "sdks/pysdk" },
+    { name = "cl-ml-tools", editable = "services/packages/cl_ml_tools" },
     { name = "loguru", specifier = ">=0.7.3" },
     { name = "pillow", specifier = ">=10.0.0" },
     { name = "pydantic", specifier = ">=2.12.5" },
