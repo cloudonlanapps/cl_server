@@ -30,3 +30,9 @@
 	path = services/packages/cl_ml_tools
 	url = git@github.com:cloudonlanapps/cl_ml_tools.git
 	branch = main
+[submodule "apps/cli_dart"]
+	path = apps/cli_dart
+	url = git@github.com:cloudonlanapps/cl_server_cli_dart.git
+[submodule "apps/ui_flutter"]
+	path = apps/ui_flutter
+	url = https://github.com/cloudonlanapps/keep_it_package.git
