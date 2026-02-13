@@ -168,7 +168,8 @@ class HealthBroadcaster:
         cmd.append(f"auth_url={self.auth_url}")
         cmd.append(f"store_url={self.store_url}")
         cmd.append(f"compute_url={self.compute_url}")
-        
+        cmd.append(f"mqtt_url={self.mqtt_url}")
+
         if not is_healthy:
              # Find unhealthy services
              unhealthy = [k for k, v in self.health_status.items() if not v]

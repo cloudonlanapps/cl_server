@@ -33,7 +33,7 @@
   ],
   "broadcaster": {
     "interval": 5.0,
-    "service_name": "rpi@cloudonlanapps",
+    "service_name": "repo.rpi@cloudonlanapps",
     "service_type": "_http._tcp",
     "txt_record": "desc=CL Server Single Worker on RPI"
   },
