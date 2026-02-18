@@ -206,11 +206,6 @@ class HealthBroadcaster:
     def _run_loop(self):
         while self.running:
             # HTTP Checks
-            self.health_status["auth"] = self._check_http(f"{self.auth_url}/health")
-            # Store and Compute might have different health endpoints or just root
-            # Based on inspection, they often use / or /health. Let's assume /health or /docs or verify with user?
-            # User said "just by getting the root url". Let's stick to that for now or try / if /health fails?
-            # Actually user said "getting the root url of each server".
             self.health_status["auth"] = self._check_http(self.auth_url) 
             self.health_status["store"] = self._check_http(self.store_url)
             self.health_status["compute"] = self._check_http(self.compute_url)
