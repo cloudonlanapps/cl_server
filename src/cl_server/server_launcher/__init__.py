@@ -435,6 +435,12 @@ def main():
     except OSError as e:
         sys.exit(f"[ERROR] Failed to create data directory {cfg.data_dir}: {e}")
 
+    # Ensure log directory exists
+    try:
+        cfg.log_dir.mkdir(parents=True, exist_ok=True)
+    except OSError as e:
+        sys.exit(f"[ERROR] Failed to create log directory {cfg.log_dir}: {e}")
+
     env = os.environ | {
         "CL_SERVER_DIR": str(cfg.data_dir),
     }
