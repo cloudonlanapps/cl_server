@@ -1,6 +1,6 @@
 {
-  "data_dir": "/tmp/cl_server_data",
-  "log_dir": "/tmp/cl_server_logs",
+  "data_dir": "~/.cl_server_test2/data",
+  "log_dir": "~/.cl_server_test2/logs",
   "auth": {
     "dir": "services/auth",
     "port": 8010

@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 
 
 class ServiceConfig(BaseModel):
@@ -36,6 +36,12 @@ class Config(BaseModel):
     log_dir: Path
 
     auth: ServiceConfig
+
+    @field_validator("data_dir", "log_dir", mode="before")
+    @classmethod
+    def expand_path(cls, v: str | Path) -> str:
+        """Expand ~ in paths."""
+        return str(Path(v).expanduser())
     store: ServiceConfig
     compute: ServiceConfig
     workers: list[WorkerConfig]
